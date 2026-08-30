@@ -60,22 +60,11 @@ nav a:hover, nav a.active {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
 }
-.card, .photo-card {
+.card {
     background: #181818;
     border: 1px solid #2a2a2a;
     padding: 15px;
     border-radius: 6px;
-}
-.video-placeholder, .photo-placeholder {
-    background: #252525;
-    height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    font-weight: bold;
-    border-radius: 4px;
-    margin-bottom: 10px;
 }
 .team-tag {
     display: inline-block;
@@ -123,7 +112,7 @@ input, select {
     color: #fff;
     border-radius: 4px;
 }
-.primary-btn, .team-btn {
+.primary-btn {
     padding: 12px;
     background: #e50914;
     color: #fff;
@@ -133,18 +122,34 @@ input, select {
     cursor: pointer;
 }
 .primary-btn:hover { background: #b20710; }
+
+/* Teams Grid with Image Cards Styling */
 .teams-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
     margin-top: 20px;
 }
-.team-btn {
-    background: #222;
-    border: 1px solid #444;
-    transition: 0.2s;
+.team-card-img {
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80');
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #333;
+    border-radius: 8px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
-.team-btn:hover {
-    background: #e50914;
+.team-card-img:hover {
+    transform: translateY(-5px;);
     border-color: #e50914;
+    box-shadow: 0 6px 15px rgba(229, 9, 20, 0.4);
 }
