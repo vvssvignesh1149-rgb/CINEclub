@@ -186,10 +186,14 @@ document.addEventListener('click', function(event) {
 
 async function openAwardOutput(category) {
     let modalContainer = document.getElementById('modalContentContainer');
-    let resWin = await safeQuery(client => client.from('winners').select('*').eq('category', category.trim().toLowerCase()).single());
-    let winnerRecord = resWin.data;
 
-    if (resWin.error || !winnerRecord) {
+    let { data: winnerRecord, error: winError } = await supabaseClient
+        .from('winners')
+        .select('*')
+        .eq('category', category.trim().toLowerCase())
+        .single();
+
+    if (winError || !winnerRecord) {
         modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best ${category.toUpperCase()} for this month yet!</p>`;
         let modal = document.getElementById('awardModal');
         if(modal) modal.style.display = 'flex';
@@ -199,10 +203,13 @@ async function openAwardOutput(category) {
     let modalTitle = document.getElementById('modalTitle');
     if(modalTitle) modalTitle.innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${winnerRecord.uploader} (${winnerRecord.team})`;
     
-    let resRec = await safeQuery(client => client.from('mediaStore').select('*').eq('id', winnerRecord.media_id).single());
-    let record = resRec.data;
+    let { data: record, error } = await supabaseClient
+        .from('mediaStore')
+        .select('*')
+        .eq('id', winnerRecord.media_id)
+        .single();
 
-    if(resRec.error || !record) {
+    if(error || !record) {
         modalContainer.innerHTML = `<p style="color:#d9534f; text-align:center;">Error: Media file not found in Cloud Database!</p>`;
         let modal = document.getElementById('awardModal');
         if(modal) modal.style.display = 'flex';
@@ -210,26 +217,32 @@ async function openAwardOutput(category) {
     }
 
     let fileSrc = record.file_url;
+
+    // 🔥 Mobile-friendly center alignment styling added here
     if(winnerRecord.type === 'Photograph') {
         modalContainer.innerHTML = `
-            <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
-            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
-            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${winnerRecord.team} | Photographer: ${winnerRecord.uploader}</p>
+            <div style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <img src="${fileSrc}" style="max-width:95%; max-height:60vh; object-fit:contain; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+                <h4 style="margin-top:12px; color:#fff; font-size:16px;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Photographer: ${winnerRecord.uploader}</p>
+            </div>
         `;
     } else {
         modalContainer.innerHTML = `
-            <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
-                <source src="${fileSrc}" type="video/mp4">
-                Your browser does not support video playback.
-            </video>
-            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
-            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${winnerRecord.team} | Maker: ${winnerRecord.uploader}</p>
+            <div style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <video width="100%" max-height="60vh" controls autoplay style="max-width:95%; max-height:60vh; border-radius:8px; background:#000; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+                    <source src="${fileSrc}" type="video/mp4">
+                    Your browser does not support video playback.
+                </video>
+                <h4 style="margin-top:12px; color:#fff; font-size:16px;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Maker: ${winnerRecord.uploader}</p>
+            </div>
         `;
     }
+    
     let modal = document.getElementById('awardModal');
     if(modal) modal.style.display = 'flex';
 }
-
 async function loadHomeFeed() {
     let allContent = [];
     let res = await safeQuery(client => client.from('mediaStore').select('*'));
