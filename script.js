@@ -14,6 +14,9 @@ function showSection(sectionId) {
     let targetSec = document.getElementById(sectionId);
     if(targetSec) targetSec.style.display = 'block';
     
+    // 🔥 Instant jump to top so no manual scroll is needed
+    window.scrollTo(0, 0);
+
     if(sectionId === 'home') {
         loadHomeFeed();
         loadAwardsBanners();
@@ -29,7 +32,6 @@ function showSection(sectionId) {
         loadDedicatedEdits();
     }
 }
-
 function formatDescriptionWithLinks(text) {
     if (!text) return '';
     let urlRegex = /(https?:\/\/[^\s]+)/g;
