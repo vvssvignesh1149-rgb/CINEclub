@@ -39,7 +39,7 @@ function openCinenetDB() {
     });
 }
 
-// Load 3 Award Winners onto Home Page Team Cards with Normal Border Style
+// Load 3 Award Winners onto Home Page Team Cards
 function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
@@ -53,7 +53,7 @@ function loadAwardsBanners() {
                 cardEl.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
                 cardEl.style.backgroundSize = 'cover';
                 cardEl.style.backgroundPosition = 'center';
-                cardEl.style.border = '2px solid #333'; // Normal border like other cards
+                cardEl.style.border = '2px solid #333';
             }
             
             let cleanTitle = item.title ? item.title.replace(/(https?:\/\/[^\s]+)/g, '').trim() : '';
@@ -219,42 +219,51 @@ function switchAuth(tab) {
     }
 }
 
+// 🔥 Updated Signup with Duplicate Prevention (Name & Roll No check)
 function handleSignup(e) {
     e.preventDefault();
+    const nameInput = document.getElementById('suName').value.trim();
+    const rollInput = document.getElementById('suRoll').value.trim();
+    
     const newUser = {
-        name: document.getElementById('suName').value,
-        roll: document.getElementById('suRoll').value,
-        branch: document.getElementById('suBranch').value,
-        year: document.getElementById('suYear').value,
+        name: nameInput,
+        roll: rollInput,
+        branch: document.getElementById('suBranch').value.trim(),
+        year: document.getElementById('suYear').value.trim(),
         team: null
     };
 
     let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-    if(users.some(u => u.roll === newUser.roll)) {
-        alert('Roll Number already registered!');
+    
+    // Check if Roll No or Name already exists
+    let existingUser = users.find(u => u.roll.toLowerCase() === newUser.roll.toLowerCase() || u.name.toLowerCase() === newUser.name.toLowerCase());
+    
+    if(existingUser) {
+        alert('❌ An account with this Roll Number or Name already exists! Please Login directly.');
+        switchAuth('login');
         return;
     }
 
     users.push(newUser);
     localStorage.setItem('cinenet_users', JSON.stringify(users));
-    alert('Sign Up Successful! Please Login.');
+    alert('✅ Sign Up Successful! Please Login with your credentials.');
     switchAuth('login');
 }
 
 function handleLogin(e) {
     e.preventDefault();
-    const name = document.getElementById('liName').value;
-    const roll = document.getElementById('liRoll').value;
+    const name = document.getElementById('liName').value.trim();
+    const roll = document.getElementById('liRoll').value.trim();
 
     let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-    let user = users.find(u => u.name === name && u.roll === roll);
+    let user = users.find(u => u.name.toLowerCase() === name.toLowerCase() && u.roll.toLowerCase() === roll.toLowerCase());
 
     if(user) {
         localStorage.setItem('cinenet_current_user', JSON.stringify(user));
-        alert('Login Successful!');
+        alert('🎉 Login Successful!');
         showSection('home');
     } else {
-        alert('Invalid Credentials or Sign Up First.');
+        alert('❌ Invalid Credentials or Account not found. Please Sign Up first.');
     }
 }
 
