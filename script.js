@@ -287,26 +287,28 @@ function processUpload(teamName) {
     }
 
     let file = fileInput.files[0];
+    let reader = new FileReader();
 
-    // Use URL.createObjectURL for instant streaming and bypass storage limit
-    let fileUrl = URL.createObjectURL(file);
+    reader.onload = function(e) {
+        let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+        allContent.push({
+            team: teamName,
+            type: type,
+            title: title,
+            fileData: e.target.result, // Permanent Base64 string encoding
+            uploader: currentUser.name
+        });
 
-    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-    allContent.push({
-        team: teamName,
-        type: type,
-        title: title,
-        fileData: fileUrl,
-        uploader: currentUser.name
-    });
+        try {
+            localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+            alert('Successfully uploaded and published permanently to Home Page feed!');
+            loadMyTeamWorkspace();
+        } catch (err) {
+            alert('Storage limit reached! Please try a slightly smaller video file.');
+        }
+    };
 
-    try {
-        localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
-        alert('Successfully uploaded and published to Home Page feed!');
-        loadMyTeamWorkspace();
-    } catch (err) {
-        alert('Storage limit reached! Please try a slightly smaller file or clear browser cache.');
-    }
+    reader.readAsDataURL(file);
 }
 
 window.onload = function() {
