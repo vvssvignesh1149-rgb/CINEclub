@@ -98,7 +98,7 @@ function openTeamInterface(teamName) {
         joinContainer.innerHTML = `<button onclick="confirmJoinTeam('${teamName}')" class="primary-btn" style="background:#28a745;">Join This Team</button>`;
     }
 
-    // Render Team Uploads
+    // Render Team Uploads (Videos & Images)
     let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
     let teamContent = allContent.filter(c => c.team === teamName);
     let workGrid = document.getElementById('teamWorkGrid');
@@ -106,14 +106,30 @@ function openTeamInterface(teamName) {
     if(teamContent.length === 0) {
         workGrid.innerHTML = `<div class="card"><div class="video-placeholder">No Uploads Yet</div><span class="team-tag">Team: ${teamName}</span></div>`;
     } else {
-        workGrid.innerHTML = teamContent.map(item => `
-            <div class="card" style="background:#1f1f1f;">
-                <span class="team-tag">${item.type}</span>
-                <h4 style="margin-top:10px;">${item.title}</h4>
-                <p style="font-size:13px; color:#aaa;">By: ${item.uploader}</p>
-                <a href="${item.url}" target="_blank" style="color:#e50914; text-decoration:none; font-weight:bold;">Watch / View &rarr;</a>
-            </div>
-        `).join('');
+        workGrid.innerHTML = teamContent.map(item => {
+            if(item.type === 'Video (Max 20s)') {
+                return `
+                    <div class="card" style="background:#1f1f1f;">
+                        <span class="team-tag">Video Teaser</span>
+                        <h4 style="margin-top:10px;">${item.title}</h4>
+                        <video width="100%" height="130" controls style="margin-top:8px; border-radius:4px;">
+                            <source src="${item.fileData}" type="video/mp4">
+                            Your browser does not support video.
+                        </video>
+                        <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="card" style="background:#1f1f1f;">
+                        <span class="team-tag">Photograph</span>
+                        <h4 style="margin-top:10px;">${item.title}</h4>
+                        <img src="${item.fileData}" alt="Photo" style="width:100%; height:130px; object-fit:cover; margin-top:8px; border-radius:4px;">
+                        <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                    </div>
+                `;
+            }
+        }).join('');
     }
 
     // Render Members
@@ -174,33 +190,41 @@ function loadMyTeamWorkspace() {
     container.innerHTML = `
         <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
-            <p style="color:#ccc; margin-bottom:15px;">You are a verified member. Upload your team's short films, edits, or photographs below:</p>
+            <p style="color:#ccc; margin-bottom:15px;">You are a verified member. Upload separate Video Teasers (Max 20 seconds) or Photographs below:</p>
             
+            <!-- Video Upload Form -->
             <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
-                <h4 style="margin-bottom:10px;">Upload Content</h4>
-                <form onsubmit="handleTeamUpload(event, '${teamName}')" style="display:flex; flex-direction:column; gap:10px;">
-                    <select id="contentType" required style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <option value="">Select Type</option>
-                        <option value="Short Film">Short Film (YouTube URL)</option>
-                        <option value="Edit">Edit (YouTube URL)</option>
-                        <option value="Photograph">Photograph</option>
-                    </select>
-                    <input type="text" id="contentTitle" placeholder="Title / Description" required>
-                    <input type="text" id="contentUrl" placeholder="YouTube URL or Image Link" required>
-                    <button type="submit" class="primary-btn" style="background:#28a745;">Upload</button>
+                <h4 style="margin-bottom:10px; color:#ffcc00;">Upload 20-Sec Video Teaser</h4>
+                <form onsubmit="handleMediaUpload(event, '${teamName}', 'Video')" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="vidTitle" placeholder="Video Title" required>
+                    <input type="file" id="vidFile" accept="video/*" required style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button type="submit" class="primary-btn" style="background:#e50914;">Upload Video (Max 20s)</button>
+                </form>
+            </div>
+
+            <!-- Image Upload Form -->
+            <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
+                <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Photograph</h4>
+                <form onsubmit="handleMediaUpload(event, '${teamName}', 'Image')" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="imgTitle" placeholder="Photograph Title / Description" required>
+                    <input type="file" id="imgFile" accept="image/*" required style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button type="submit" class="primary-btn" style="background:#28a745;">Upload Photograph</button>
                 </form>
             </div>
 
             <div style="margin-top:30px;">
-                <h4>Your Team's Uploads</h4>
+                <h4>Your Team's Uploaded Media</h4>
                 <div class="grid-layout" style="margin-top:15px;">
-                    ${teamContent.length === 0 ? '<p style="color:#888;">No uploads yet.</p>' : 
+                    ${teamContent.length === 0 ? '<p style="color:#888;">No media uploaded yet.</p>' : 
                         teamContent.map(item => `
                             <div class="card" style="background:#1f1f1f;">
                                 <span class="team-tag">${item.type}</span>
                                 <h4 style="margin-top:10px;">${item.title}</h4>
-                                <p style="font-size:13px; color:#aaa;">By: ${item.uploader}</p>
-                                <a href="${item.url}" target="_blank" style="color:#e50914; text-decoration:none; font-weight:bold;">View &rarr;</a>
+                                <p style="font-size:12px; color:#aaa; margin:5px 0;">By: ${item.uploader}</p>
+                                ${item.type === 'Video (Max 20s)' ? 
+                                    `<video width="100%" height="120" controls style="border-radius:4px;"><source src="${item.fileData}" type="video/mp4"></video>` : 
+                                    `<img src="${item.fileData}" alt="Uploaded Photo" style="width:100%; height:120px; object-fit:cover; border-radius:4px;">`
+                                }
                             </div>
                         `).join('')}
                 </div>
@@ -209,22 +233,74 @@ function loadMyTeamWorkspace() {
     `;
 }
 
-function handleTeamUpload(e, teamName) {
-    e.preventDefault();
+function handleMediaUpload(event, teamName, mediaType) {
+    event.preventDefault();
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
-    
-    const newContent = {
-        team: teamName,
-        type: document.getElementById('contentType').value,
-        title: document.getElementById('contentTitle').value,
-        url: document.getElementById('contentUrl').value,
-        uploader: currentUser.name
-    };
 
-    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-    allContent.push(newContent);
-    localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+    if (mediaType === 'Video') {
+        let fileInput = document.getElementById('vidFile');
+        let title = document.getElementById('vidTitle').value;
+        let file = fileInput.files[0];
 
-    alert('Uploaded successfully!');
-    loadMyTeamWorkspace();
+        if (!file) return;
+
+        // Check video duration (Max 20 seconds)
+        let videoElement = document.createElement('video');
+        let fileURL = URL.createObjectURL(file);
+        videoElement.src = fileURL;
+
+        videoElement.onloadedmetadata = function() {
+            window.URL.revokeObjectURL(videoElement.src);
+            if (videoElement.duration > 20.5) {
+                alert(`Video duration is ${Math.round(videoElement.duration)} seconds! Please upload a video of 20 seconds or less.`);
+                return;
+            }
+
+            // Convert to Base64 to store in localStorage
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                const newContent = {
+                    team: teamName,
+                    type: 'Video (Max 20s)',
+                    title: title,
+                    fileData: e.target.result,
+                    uploader: currentUser.name
+                };
+
+                let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+                allContent.push(newContent);
+                localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+
+                alert('Video uploaded successfully (Validated <= 20s)!');
+                loadMyTeamWorkspace();
+            };
+            reader.readAsDataURL(file);
+        };
+    } else {
+        // Image Upload
+        let fileInput = document.getElementById('imgFile');
+        let title = document.getElementById('imgTitle').value;
+        let file = fileInput.files[0];
+
+        if (!file) return;
+
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            const newContent = {
+                team: teamName,
+                type: 'Photograph',
+                title: title,
+                fileData: e.target.result,
+                uploader: currentUser.name
+            };
+
+            let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+            allContent.push(newContent);
+            localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+
+            alert('Photograph uploaded successfully!');
+            loadMyTeamWorkspace();
+        };
+        reader.readAsDataURL(file);
+    }
 }
