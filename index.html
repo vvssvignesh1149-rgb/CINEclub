@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar with Clean Gear Logo & Triple-Tap Secret Admin -->
+    <!-- Navigation Bar -->
     <header>
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
             <div class="logo">CINENET</div>
-            <!-- Updated Clean Transparent Gear Logo with Triple-Tap Gesture -->
-            <img src="logo.png" alt="Logo" onclick="handleLogoTripleTap()" style="height:38px; width:38px; object-fit:contain; cursor:pointer;" title="CINENET Club">
+            <!-- Make sure your image file is named logo.png in the folder -->
+            <img src="logo.png" alt="Cinenet Logo" onclick="handleLogoTripleTap()" style="height:36px; width:36px; object-fit:contain; cursor:pointer;" title="Triple tap for Admin">
         </div>
         <nav>
             <a href="#" onclick="showSection('home')">Home</a>
@@ -57,20 +57,20 @@
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
                 
                 <!-- Card 1: Best Filmmaker -->
-                <div id="bestCard_filmmaker" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('filmmaker')">
-                    <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">🎬 Best Filmmaker</h3>
+                <div id="bestCard_filmmaker" class="team-card-img" onclick="openAwardOutput('filmmaker')">
+                    <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">🎬 Best Filmmaker</h3>
                     <div id="bestName_filmmaker"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
                 <!-- Card 2: Best Photographer -->
-                <div id="bestCard_photographer" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('photographer')">
-                    <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">📸 Best Photographer</h3>
+                <div id="bestCard_photographer" class="team-card-img" onclick="openAwardOutput('photographer')">
+                    <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">📸 Best Photographer</h3>
                     <div id="bestName_photographer"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
                 <!-- Card 3: Best Editor -->
-                <div id="bestCard_editor" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('editor')">
-                    <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">✂️ Best Editor</h3>
+                <div id="bestCard_editor" class="team-card-img" onclick="openAwardOutput('editor')">
+                    <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">✂️ Best Editor</h3>
                     <div id="bestName_editor"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
