@@ -44,7 +44,7 @@ function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
     categories.forEach(cat => {
-        // Check all possible key variants in localStorage
+        // Fetch securely checking all variations
         let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`)) || 
                    JSON.parse(localStorage.getItem(`cinenet_best_${cat.toUpperCase()}`)) ||
                    JSON.parse(localStorage.getItem(`cinenet_best_${cat.charAt(0).toUpperCase() + cat.slice(1)}`));
@@ -59,12 +59,12 @@ function loadAwardsBanners() {
             cardEl.style.border = '2px solid #e50914';
             
             nameEl.innerHTML = `
-                <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-shadow:2px 2px 4px rgba(0,0,0,0.8);">${item.team}</div>
-                <div style="font-size:14px; color:#fff; margin-top:5px;">By: ${item.uploader}</div>
-                <div style="font-size:12px; color:#aaa; margin-top:3px; font-style:italic;">"${item.title ? item.title.substring(0, 30) : ''}..."</div>
+                <div style="font-size:17px; font-weight:bold; color:#ffcc00; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">${item.team}</div>
+                <div style="font-size:13px; color:#fff; margin-top:3px;">By: ${item.uploader}</div>
+                <div style="font-size:11px; color:#ccc; margin-top:2px; font-style:italic;">"${item.title ? item.title.substring(0, 25) : ''}..."</div>
             `;
         } else if(cardEl && nameEl) {
-            nameEl.innerHTML = `<span style="color:#888; font-size:14px;">Not Set by Admin Yet</span>`;
+            nameEl.innerHTML = `<span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span>`;
         }
     });
 }
