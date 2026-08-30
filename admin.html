@@ -116,14 +116,15 @@
                 html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
             } else {
                 html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                filteredItems.forEach(item => {
+                filteredItems.forEach((item, index) => {
+                    // Use index to avoid any ID matching issues
                     html += `
                         <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
                             <div style="flex:1; min-width:200px; word-break:break-all;">
                                 <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
                                 <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
                             </div>
-                            <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
+                            <button type="button" onclick="setAwardWinner('${category}', ${index})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
                         </div>
                     `;
                 });
@@ -132,15 +133,25 @@
             document.getElementById('adminDataDisplay').innerHTML = html;
         }
 
-        function setAwardWinner(category, mediaId) {
+        function setAwardWinner(category, itemIndex) {
             let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-            let selectedMedia = allContent.find(item => Number(item.id) === Number(mediaId));
+            let filteredItems = [];
+            
+            if(category === 'filmmaker') {
+                filteredItems = allContent.filter(c => c.type === 'Short Film');
+            } else if(category === 'photographer') {
+                filteredItems = allContent.filter(c => c.type === 'Photograph');
+            } else if(category === 'editor') {
+                filteredItems = allContent.filter(c => c.type === 'Edit');
+            }
+
+            let selectedMedia = filteredItems[itemIndex];
             
             if (selectedMedia) {
                 localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
                 alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
             } else {
-                alert('Error: Record ID not found.');
+                alert('Error: Record index not found.');
             }
         }
     </script>
