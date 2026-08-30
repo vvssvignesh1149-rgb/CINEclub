@@ -1,16 +1,23 @@
-// 🔥 SUPABASE CONFIGURATION (Replace with your Supabase URL and Anon Key)
-const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
+// 🔥 SUPABASE CONFIGURATION
+const SUPABASE_URL = 'https://gwchrmdszjqymgbocgz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
+try {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (err) {
+    console.error("Supabase initialization error:", err);
+}
 
 function showSection(sectionId) {
     document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
-    document.getElementById(sectionId).style.display = 'block';
+    let targetSec = document.getElementById(sectionId);
+    if(targetSec) targetSec.style.display = 'block';
     
     if(sectionId === 'home') {
         loadHomeFeed();
         loadAwardsBanners();
+        fetchAndDisplayWinners();
     }
     if(sectionId === 'teams-page') {
         updateUserStatusDisplay();
@@ -72,13 +79,14 @@ async function openAwardOutput(category) {
 
     if (!item) {
         modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best ${category.toUpperCase()} for this month yet!</p>`;
-        document.getElementById('awardModal').style.display = 'flex';
+        let modal = document.getElementById('awardModal');
+        if(modal) modal.style.display = 'flex';
         return;
     } 
     
-    document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
+    let modalTitle = document.getElementById('modalTitle');
+    if(modalTitle) modalTitle.innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
     
-    // Fetch from Supabase Table
     let { data: record, error } = await supabaseClient
         .from('mediaStore')
         .select('*')
@@ -87,7 +95,8 @@ async function openAwardOutput(category) {
 
     if(error || !record) {
         modalContainer.innerHTML = `<p style="color:#d9534f; text-align:center;">Error: Media file not found in Cloud Database!</p>`;
-        document.getElementById('awardModal').style.display = 'flex';
+        let modal = document.getElementById('awardModal');
+        if(modal) modal.style.display = 'flex';
         return;
     }
 
@@ -109,12 +118,15 @@ async function openAwardOutput(category) {
             <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
         `;
     }
-    document.getElementById('awardModal').style.display = 'flex';
+    let modal = document.getElementById('awardModal');
+    if(modal) modal.style.display = 'flex';
 }
 
 function closeModal() {
-    document.getElementById('awardModal').style.display = 'none';
-    document.getElementById('modalContentContainer').innerHTML = '';
+    let modal = document.getElementById('awardModal');
+    if(modal) modal.style.display = 'none';
+    let container = document.getElementById('modalContentContainer');
+    if(container) container.innerHTML = '';
 }
 
 async function loadHomeFeed() {
@@ -125,42 +137,46 @@ async function loadHomeFeed() {
     let editsGrid = document.getElementById('homeEditsGrid');
     let photosGrid = document.getElementById('homePhotosGrid');
 
-    if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
-
     let shortFilms = allContent.filter(c => c.type === 'Short Film');
     let edits = allContent.filter(c => c.type === 'Edit');
     let photographs = allContent.filter(c => c.type === 'Photograph');
 
-    shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
-        shortFilms.map(item => `
-            <div class="card" style="background:#1f1f1f;">
-                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                    <source src="${item.file_url}" type="video/mp4">
-                </video>
-                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-            </div>
-        `).join('');
+    if(shortFilmsGrid) {
+        shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
+            shortFilms.map(item => `
+                <div class="card" style="background:#1f1f1f;">
+                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                        <source src="${item.file_url}" type="video/mp4">
+                    </video>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+                </div>
+            `).join('');
+    }
 
-    editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
-        edits.map(item => `
-            <div class="card" style="background:#1f1f1f;">
-                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                    <source src="${item.file_url}" type="video/mp4">
-                </video>
-                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-            </div>
-        `).join('');
+    if(editsGrid) {
+        editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
+            edits.map(item => `
+                <div class="card" style="background:#1f1f1f;">
+                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                        <source src="${item.file_url}" type="video/mp4">
+                    </video>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+                </div>
+            `).join('');
+    }
 
-    photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
-        photographs.map(item => `
-            <div class="card" style="background:#1f1f1f;">
-                <img src="${item.file_url}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
-                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
-            </div>
-        `).join('');
+    if(photosGrid) {
+        photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
+            photographs.map(item => `
+                <div class="card" style="background:#1f1f1f;">
+                    <img src="${item.file_url}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
+                </div>
+            `).join('');
+    }
 }
 
 async function loadDedicatedEdits() {
@@ -184,20 +200,24 @@ async function loadDedicatedEdits() {
 }
 
 function switchAuth(tab) {
+    let signupForm = document.getElementById('signupForm');
+    let loginForm = document.getElementById('loginForm');
+    let btnSignupTab = document.getElementById('btnSignupTab');
+    let btnLoginTab = document.getElementById('btnLoginTab');
+
     if(tab === 'signup') {
-        document.getElementById('signupForm').style.display = 'flex';
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('btnSignupTab').classList.add('active-tab');
-        document.getElementById('btnLoginTab').classList.remove('active-tab');
+        if(signupForm) signupForm.style.display = 'flex';
+        if(loginForm) loginForm.style.display = 'none';
+        if(btnSignupTab) btnSignupTab.classList.add('active-tab');
+        if(btnLoginTab) btnLoginTab.classList.remove('active-tab');
     } else {
-        document.getElementById('signupForm').style.display = 'none';
-        document.getElementById('loginForm').style.display = 'flex';
-        document.getElementById('btnLoginTab').classList.add('active-tab');
-        document.getElementById('btnSignupTab').classList.remove('active-tab');
+        if(signupForm) signupForm.style.display = 'none';
+        if(loginForm) loginForm.style.display = 'flex';
+        if(btnLoginTab) btnLoginTab.classList.add('active-tab');
+        if(btnSignupTab) btnSignupTab.classList.remove('active-tab');
     }
 }
 
-// 🔥 Supabase Cloud Signup
 async function handleSignup(e) {
     e.preventDefault();
     const nameInput = document.getElementById('suName').value.trim();
@@ -230,7 +250,6 @@ async function handleSignup(e) {
     switchAuth('login');
 }
 
-// 🔥 Supabase Cloud Login
 async function handleLogin(e) {
     e.preventDefault();
     const name = document.getElementById('liName').value.trim();
@@ -270,48 +289,59 @@ function updateUserStatusDisplay() {
 }
 
 async function openTeamInterface(teamName) {
-    document.getElementById('teamInterfaceView').style.display = 'block';
-    document.getElementById('activeTeamTitle').innerText = teamName;
-    document.getElementById('displayTeamNameForWork').innerText = teamName;
+    let teamInterfaceView = document.getElementById('teamInterfaceView');
+    if(teamInterfaceView) teamInterfaceView.style.display = 'block';
+    
+    let activeTeamTitle = document.getElementById('activeTeamTitle');
+    if(activeTeamTitle) activeTeamTitle.innerText = teamName;
+    
+    let displayTeamNameForWork = document.getElementById('displayTeamNameForWork');
+    if(displayTeamNameForWork) displayTeamNameForWork.innerText = teamName;
 
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let joinContainer = document.getElementById('joinActionContainer');
 
-    if(!currentUser) {
-        joinContainer.innerHTML = `<p style="color:#ffcc00;">Please login to join this team.</p>`;
-    } else if(currentUser.team) {
-        if(currentUser.team === teamName) {
-            joinContainer.innerHTML = `<span style="background:#28a745; color:#fff; padding:8px 15px; border-radius:4px; font-weight:bold; display:inline-block;">You are a Member of this Team</span>`;
+    if(joinContainer) {
+        if(!currentUser) {
+            joinContainer.innerHTML = `<p style="color:#ffcc00;">Please login to join this team.</p>`;
+        } else if(currentUser.team) {
+            if(currentUser.team === teamName) {
+                joinContainer.innerHTML = `<span style="background:#28a745; color:#fff; padding:8px 15px; border-radius:4px; font-weight:bold; display:inline-block;">You are a Member of this Team</span>`;
+            } else {
+                joinContainer.innerHTML = `<p style="color:#d9534f;">You are locked in team <strong>${currentUser.team}</strong>.</p>`;
+            }
         } else {
-            joinContainer.innerHTML = `<p style="color:#d9534f;">You are locked in team <strong>${currentUser.team}</strong>.</p>`;
+            joinContainer.innerHTML = `<button onclick="confirmJoinTeam('${teamName}')" class="primary-btn" style="background:#28a745;">Join This Team</button>`;
         }
-    } else {
-        joinContainer.innerHTML = `<button onclick="confirmJoinTeam('${teamName}')" class="primary-btn" style="background:#28a745;">Join This Team</button>`;
     }
 
     let { data: allContent } = await supabaseClient.from('mediaStore').select('*');
     let teamContent = (allContent || []).filter(c => c.team === teamName);
     let workGrid = document.getElementById('teamWorkGrid');
     
-    workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
-        teamContent.map(item => `
-            <div class="card" style="background:#1f1f1f;">
-                <span class="team-tag">${item.type}</span>
-                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                ${item.type === 'Photograph' ? 
-                    `<img src="${item.file_url}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
-                    `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
-                }
-                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-            </div>
-        `).join('');
+    if(workGrid) {
+        workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
+            teamContent.map(item => `
+                <div class="card" style="background:#1f1f1f;">
+                    <span class="team-tag">${item.type}</span>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                    ${item.type === 'Photograph' ? 
+                        `<img src="${item.file_url}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
+                        `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
+                    }
+                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                </div>
+            `).join('');
+    }
 
     let { data: users } = await supabaseClient.from('cinenet_users').select('*');
     let teamMembers = (users || []).filter(u => u.team === teamName);
     let memberListEl = document.getElementById('activeTeamMemberList');
 
-    memberListEl.innerHTML = teamMembers.length === 0 ? '<p style="color:#888;">No members in this team yet.</p>' :
-        teamMembers.map(m => `<div style="padding: 6px 0; border-bottom: 1px solid #222;"><strong>${m.name}</strong> - ${m.branch} (${m.year} Year)</div>`).join('');
+    if(memberListEl) {
+        memberListEl.innerHTML = teamMembers.length === 0 ? '<p style="color:#888;">No members in this team yet.</p>' :
+            teamMembers.map(m => `<div style="padding: 6px 0; border-bottom: 1px solid #222;"><strong>${m.name}</strong> - ${m.branch} (${m.year} Year)</div>`).join('');
+    }
 }
 
 async function confirmJoinTeam(teamName) {
@@ -336,12 +366,26 @@ async function confirmJoinTeam(teamName) {
     openTeamInterface(teamName);
 }
 
+// 🔥 My Team Workspace + Login Check Feature Integration
 async function loadMyTeamWorkspace() {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let container = document.getElementById('myTeamContainer');
 
-    if(!currentUser || !currentUser.team) {
-        container.innerHTML = `<p style="color:#d9534f;">⚠️ You must join a team first to access the workspace!</p>`;
+    if(!container) return;
+
+    // FEATURE 3: Evaru login avvakapothe upload option block chesi login button chupisthundi
+    if(!currentUser) {
+        container.innerHTML = `
+            <div style="background:#1a1a1a; border:1px dashed #e50914; padding:30px; text-align:center; border-radius:8px; margin-top:20px;">
+                <p style="color:#ff4d4d; font-size:18px; margin-bottom:15px;">⚠️ You must be logged in to access team workspace and upload Short Films, Photographs or Edits.</p>
+                <button onclick="showSection('auth')" class="primary-btn" style="background:#e50914; color:#fff; padding:12px 25px; border-radius:5px; font-size:15px; cursor:pointer;">Login / Register Now</button>
+            </div>
+        `;
+        return;
+    }
+
+    if(!currentUser.team) {
+        container.innerHTML = `<p style="color:#d9534f; text-align:center; padding:20px;">⚠️ You must join a team first under the "Teams" tab to access the workspace and upload files!</p>`;
         return;
     }
 
@@ -354,7 +398,7 @@ async function loadMyTeamWorkspace() {
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
             <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs to Cloud:</p>
             
-            <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
+            <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;" id="uploadSection">
                 <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
                 <div style="display:flex; flex-direction:column; gap:10px;">
                     <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
@@ -395,6 +439,11 @@ async function loadMyTeamWorkspace() {
 // 🔥 Supabase Cloud Storage File Upload & DB Insert
 async function processCloudUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
+    if(!currentUser) {
+        alert('❌ You must be logged in to upload files!');
+        return;
+    }
+
     let type = document.getElementById('mediaType').value;
     let title = document.getElementById('mediaTitle').value.trim();
     let fileInput = document.getElementById('mediaFile');
@@ -415,7 +464,6 @@ async function processCloudUpload(teamName) {
 
     alert('⏳ Uploading file to Supabase Cloud Storage... Please wait.');
 
-    // Upload to Supabase Storage Bucket ('cinenet-bucket')
     let { data: storageData, error: storageError } = await supabaseClient.storage
         .from('cinenet-bucket')
         .upload(filePath, file);
@@ -425,14 +473,12 @@ async function processCloudUpload(teamName) {
         return;
     }
 
-    // Get Public URL
     let { data: publicUrlData } = supabaseClient.storage
         .from('cinenet-bucket')
         .getPublicUrl(filePath);
 
     let fileUrl = publicUrlData.publicUrl;
 
-    // Insert Record into Supabase Table ('mediaStore')
     let { error: dbError } = await supabaseClient.from('mediaStore').insert([{
         team: teamName,
         type: type,
@@ -464,3 +510,45 @@ async function deleteCloudMedia(id) {
     loadMyTeamWorkspace();
     loadHomeFeed();
 }
+
+// 🔥 REAL-TIME WINNERS SYNC ACROSS ALL DEVICES (Mobile & Laptop)
+async function fetchAndDisplayWinners() {
+    let { data: winnersList, error } = await supabaseClient.from('winners').select('*');
+    if(error || !winnersList) return;
+
+    // First clear existing displays
+    ['filmmaker', 'photographer', 'editor'].forEach(cat => {
+        let div = document.getElementById(`display-winner-${cat}`);
+        if(div) div.innerHTML = `<p style="color:#888; font-size:13px;">Not Set by Admin Yet</p>`;
+    });
+
+    winnersList.forEach(w => {
+        let winnerDiv = document.getElementById(`display-winner-${w.category}`);
+        if(winnerDiv) {
+            winnerDiv.innerHTML = `
+                <div style="background:#1a1a1a; border:2px solid #ffcc00; padding:15px; border-radius:8px; margin-top:10px; color:#fff;">
+                    <h3 style="color:#ffcc00; margin:0 0 5px 0;">🏆 Best ${w.category.toUpperCase()}</h3>
+                    <p style="margin:0; font-size:16px;"><strong>${w.title}</strong></p>
+                    <p style="margin:5px 0 0 0; color:#aaa; font-size:14px;">By: ${w.uploader} | Team: <strong style="color:#fff;">${w.team}</strong></p>
+                </div>
+            `;
+        }
+    });
+}
+
+// Realtime Listener using Supabase WebSockets
+if(supabaseClient) {
+    supabaseClient
+      .channel('public:winners')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'winners' }, payload => {
+          console.log('Winners table changed live!', payload);
+          fetchAndDisplayWinners();
+      })
+      .subscribe();
+}
+
+// Page load initialization
+window.addEventListener('DOMContentLoaded', () => {
+    fetchAndDisplayWinners();
+    loadHomeFeed();
+});

@@ -8,7 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="container">
-    <h2>CINENET Admin Portal</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; background:#222; padding:15px; border-radius:5px;">
+        <h2 style="margin:0; color:#fff;">CINENET Admin Portal</h2>
+        <div>
+            <button onclick="loadCurrentWinners()" class="primary-btn" style="background:#17a2b8; color:#fff; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; margin-right:10px;">Manage Winners</button>
+            <button onclick="adminLogout()" class="primary-btn" style="background:#dc3545; color:#fff; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
+    </div>
 
     <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:block;">
@@ -23,7 +29,7 @@
 
     <script>
         // 🔥 SUPABASE CONFIGURATION
-        const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
+        const SUPABASE_URL = 'https://gwchrmdszjqymgbocgz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
         
         let supabaseClient = null;
@@ -33,10 +39,9 @@
             console.error("Supabase initialization error:", err);
         }
 
-        // Page load avvagane users table load avvali
         window.onload = function() {
             if (!supabaseClient) {
-                document.getElementById('adminDataDisplay').innerHTML = `<p style="color:#d9534f; text-align:center;">Failed to initialize Supabase client. Check CDN script connection.</p>`;
+                document.getElementById('adminDataDisplay').innerHTML = `<p style="color:#d9534f; text-align:center;">Failed to initialize Supabase client.</p>`;
                 return;
             }
             loadUserTable();
@@ -44,10 +49,7 @@
 
         async function loadUserTable() {
             let { data: users, error } = await supabaseClient.from('cinenet_users').select('*');
-            if(error) {
-                console.error("Error fetching users:", error.message);
-                users = [];
-            }
+            if(error) users = [];
 
             let html = `<h3>Registered Users & Team Management</h3>
                         <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; background:#181818; color:#fff;">
@@ -61,7 +63,7 @@
                             </tr>`;
             
             if(users.length === 0) {
-                html += `<tr><td colspan="6" style="text-align:center; padding:15px;">No users registered yet or connection error.</td></tr>`;
+                html += `<tr><td colspan="6" style="text-align:center; padding:15px;">No users registered yet.</td></tr>`;
             } else {
                 users.forEach(u => {
                     html += `<tr>
@@ -87,7 +89,7 @@
                 .eq('roll', rollNo);
 
             if(error) {
-                alert('❌ Failed to remove user from team: ' + error.message);
+                alert('❌ Failed to remove user from team.');
                 return;
             }
             alert('✅ User successfully removed from the team by Admin!');
@@ -147,21 +149,68 @@
                 return;
             }
 
-            let winnerMetadata = {
-                id: selectedMedia.id,
-                team: selectedMedia.team,
-                uploader: selectedMedia.uploader,
-                title: selectedMedia.title,
-                type: selectedMedia.type
-            };
+            let cleanCategory = category.trim().toLowerCase();
+            
+            let { error: upsertError } = await supabaseClient
+                .from('winners')
+                .upsert({
+                    category: cleanCategory,
+                    team: selectedMedia.team,
+                    uploader: selectedMedia.uploader,
+                    title: selectedMedia.title,
+                    type: selectedMedia.type,
+                    media_id: selectedMedia.id
+                });
 
-            try {
-                let cleanCategory = category.trim().toLowerCase();
-                localStorage.setItem(`cinenet_best_${cleanCategory}`, JSON.stringify(winnerMetadata));
-                alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${cleanCategory.toUpperCase()}`);
-            } catch(e) {
-                alert("Storage Error!");
+            if(upsertError) {
+                alert('❌ Failed to save winner to cloud: ' + upsertError.message);
+                return;
             }
+
+            alert(`✅ Winner Set Successfully & Synced to Cloud!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}`);
+        }
+
+        async function loadCurrentWinners() {
+            let { data: winnersList, error } = await supabaseClient.from('winners').select('*');
+            
+            let html = `<h3>Manage & Remove Current Winners</h3>`;
+            if(!winnersList || winnersList.length === 0) {
+                html += `<p style="color:#aaa;">No winners set yet.</p>`;
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">`;
+                winnersList.forEach(w => {
+                    html += `
+                        <div style="background:#181818; border:1px solid #444; padding:12px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="color:#ffcc00; text-transform:uppercase;">Best ${w.category}</strong>: ${w.title} (By: ${w.uploader} - Team: ${w.team})
+                            </div>
+                            <button onclick="removeWinner('${w.category}')" style="background:#d9534f; color:#fff; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">Remove Winner</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            document.getElementById('adminDataDisplay').innerHTML = html;
+        }
+
+        async function removeWinner(category) {
+            let { error } = await supabaseClient
+                .from('winners')
+                .delete()
+                .eq('category', category);
+
+            if(error) {
+                alert('❌ Failed to remove winner: ' + error.message);
+                return;
+            }
+            alert(`✅ Winner for Best ${category.toUpperCase()} removed successfully!`);
+            loadCurrentWinners();
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('cinenet_admin_logged');
+            alert('🔒 Logged out from Admin Panel successfully!');
+            window.location.href = 'index.html';
         }
     </script>
 </body>
