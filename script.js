@@ -38,16 +38,45 @@ function formatDescriptionWithLinks(text) {
     });
 }
 
-// Load 3 Award Winners onto Home Page Team Cards
-function loadAwardsBanners() {
+// 🌐 GLOBAL LOGOUT & NAVBAR AUTH CHECK
+function checkGlobalNavbarAuth() {
+    let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
+    let navAuthContainer = document.getElementById('globalAuthNav');
+    if(!navAuthContainer) return;
+
+    if(currentUser) {
+        navAuthContainer.innerHTML = `
+            <span style="color:#ffcc00; font-size:14px; margin-right:8px; font-weight:bold;">👤 ${currentUser.name}</span>
+            <button onclick="globalWebsiteLogout()" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px;">Logout</button>
+        `;
+    } else {
+        navAuthContainer.innerHTML = `
+            <button onclick="showSection('auth')" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">Login / Sign Up</button>
+        `;
+    }
+}
+
+function globalWebsiteLogout() {
+    localStorage.removeItem('cinenet_current_user');
+    alert('🔒 Logged out successfully from CINENET!');
+    checkGlobalNavbarAuth();
+    showSection('home');
+}
+
+// 🔥 LOAD WINNERS DIRECTLY INTO CORRECT CARDS (Teams Best of the Month)
+async function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
+    let { data: winnersList, error } = await supabaseClient.from('winners').select('*');
+    if (error) winnersList = [];
+
     categories.forEach(cat => {
-        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`));
         let cardEl = document.getElementById(`bestCard_${cat}`);
         let nameEl = document.getElementById(`bestName_${cat}`);
+        
+        let matchedWinner = winnersList ? winnersList.find(w => w.category && w.category.trim().toLowerCase() === cat) : null;
 
-        if (item && nameEl) {
+        if (matchedWinner && nameEl) {
             if(cardEl) {
                 cardEl.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
                 cardEl.style.backgroundSize = 'cover';
@@ -55,12 +84,12 @@ function loadAwardsBanners() {
                 cardEl.style.border = '2px solid #333';
             }
             
-            let cleanTitle = item.title ? item.title.replace(/(https?:\/\/[^\s]+)/g, '').trim() : '';
+            let cleanTitle = matchedWinner.title ? matchedWinner.title.replace(/(https?:\/\/[^\s]+)/g, '').trim() : '';
             if(!cleanTitle) cleanTitle = "Masterpiece Winner";
 
             nameEl.innerHTML = `
-                <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-transform:uppercase; letter-spacing:1px;">${item.team}</div>
-                <div style="font-size:14px; color:#ffffff; font-weight:600; margin-top:4px;">Winner: ${item.uploader}</div>
+                <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-transform:uppercase; letter-spacing:1px;">${matchedWinner.team}</div>
+                <div style="font-size:14px; color:#ffffff; font-weight:600; margin-top:4px;">Winner: ${matchedWinner.uploader}</div>
                 <div style="font-size:12px; color:#cccccc; margin-top:2px; font-style:italic;">"${cleanTitle.substring(0, 25)}..."</div>
             `;
         } else if(nameEl) {
@@ -74,10 +103,15 @@ function loadAwardsBanners() {
 }
 
 async function openAwardOutput(category) {
-    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
     let modalContainer = document.getElementById('modalContentContainer');
 
-    if (!item) {
+    let { data: winnerRecord, error: winError } = await supabaseClient
+        .from('winners')
+        .select('*')
+        .eq('category', category.trim().toLowerCase())
+        .single();
+
+    if (winError || !winnerRecord) {
         modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best ${category.toUpperCase()} for this month yet!</p>`;
         let modal = document.getElementById('awardModal');
         if(modal) modal.style.display = 'flex';
@@ -85,12 +119,12 @@ async function openAwardOutput(category) {
     } 
     
     let modalTitle = document.getElementById('modalTitle');
-    if(modalTitle) modalTitle.innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
+    if(modalTitle) modalTitle.innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${winnerRecord.uploader} (${winnerRecord.team})`;
     
     let { data: record, error } = await supabaseClient
         .from('mediaStore')
         .select('*')
-        .eq('id', item.id)
+        .eq('id', winnerRecord.media_id)
         .single();
 
     if(error || !record) {
@@ -102,11 +136,11 @@ async function openAwardOutput(category) {
 
     let fileSrc = record.file_url;
 
-    if(item.type === 'Photograph') {
+    if(winnerRecord.type === 'Photograph') {
         modalContainer.innerHTML = `
             <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
-            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
+            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
+            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${winnerRecord.team} | Photographer: ${winnerRecord.uploader}</p>
         `;
     } else {
         modalContainer.innerHTML = `
@@ -114,8 +148,8 @@ async function openAwardOutput(category) {
                 <source src="${fileSrc}" type="video/mp4">
                 Your browser does not support video playback.
             </video>
-            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
+            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
+            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${winnerRecord.team} | Maker: ${winnerRecord.uploader}</p>
         `;
     }
     let modal = document.getElementById('awardModal');
@@ -266,6 +300,7 @@ async function handleLogin(e) {
     if(user) {
         localStorage.setItem('cinenet_current_user', JSON.stringify(user));
         alert('🎉 Login Successful!');
+        checkGlobalNavbarAuth();
         showSection('home');
     } else {
         alert('❌ Invalid Credentials or Account not found.');
@@ -366,14 +401,12 @@ async function confirmJoinTeam(teamName) {
     openTeamInterface(teamName);
 }
 
-// 🔥 My Team Workspace + Login Check Feature Integration
 async function loadMyTeamWorkspace() {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let container = document.getElementById('myTeamContainer');
 
     if(!container) return;
 
-    // FEATURE 3: Evaru login avvakapothe upload option block chesi login button chupisthundi
     if(!currentUser) {
         container.innerHTML = `
             <div style="background:#1a1a1a; border:1px dashed #e50914; padding:30px; text-align:center; border-radius:8px; margin-top:20px;">
@@ -436,7 +469,6 @@ async function loadMyTeamWorkspace() {
     `;
 }
 
-// 🔥 Supabase Cloud Storage File Upload & DB Insert
 async function processCloudUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     if(!currentUser) {
@@ -511,44 +543,22 @@ async function deleteCloudMedia(id) {
     loadHomeFeed();
 }
 
-// 🔥 REAL-TIME WINNERS SYNC ACROSS ALL DEVICES (Mobile & Laptop)
 async function fetchAndDisplayWinners() {
-    let { data: winnersList, error } = await supabaseClient.from('winners').select('*');
-    if(error || !winnersList) return;
-
-    // First clear existing displays
-    ['filmmaker', 'photographer', 'editor'].forEach(cat => {
-        let div = document.getElementById(`display-winner-${cat}`);
-        if(div) div.innerHTML = `<p style="color:#888; font-size:13px;">Not Set by Admin Yet</p>`;
-    });
-
-    winnersList.forEach(w => {
-        let winnerDiv = document.getElementById(`display-winner-${w.category}`);
-        if(winnerDiv) {
-            winnerDiv.innerHTML = `
-                <div style="background:#1a1a1a; border:2px solid #ffcc00; padding:15px; border-radius:8px; margin-top:10px; color:#fff;">
-                    <h3 style="color:#ffcc00; margin:0 0 5px 0;">🏆 Best ${w.category.toUpperCase()}</h3>
-                    <p style="margin:0; font-size:16px;"><strong>${w.title}</strong></p>
-                    <p style="margin:5px 0 0 0; color:#aaa; font-size:14px;">By: ${w.uploader} | Team: <strong style="color:#fff;">${w.team}</strong></p>
-                </div>
-            `;
-        }
-    });
+    await loadAwardsBanners();
 }
 
-// Realtime Listener using Supabase WebSockets
 if(supabaseClient) {
     supabaseClient
       .channel('public:winners')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'winners' }, payload => {
           console.log('Winners table changed live!', payload);
-          fetchAndDisplayWinners();
+          loadAwardsBanners();
       })
       .subscribe();
 }
 
-// Page load initialization
 window.addEventListener('DOMContentLoaded', () => {
+    checkGlobalNavbarAuth();
     fetchAndDisplayWinners();
     loadHomeFeed();
 });
