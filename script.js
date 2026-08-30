@@ -48,7 +48,6 @@ function loadAwardsBanners() {
     ];
 
     categories.forEach(cat => {
-        // Check both lowercase and uppercase storage keys for full safety
         let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat.key}`)) || 
                    JSON.parse(localStorage.getItem(`cinenet_best_${cat.key.toUpperCase()}`));
         
@@ -72,6 +71,7 @@ function loadAwardsBanners() {
     });
 }
 
+// 🔥 CRITICAL FIX: Pulls video directly from IndexedDB without failing
 async function openAwardOutput(category) {
     let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`)) || 
                JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`));
@@ -80,36 +80,45 @@ async function openAwardOutput(category) {
 
     if (!item) {
         modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best ${category.toUpperCase()} for this month yet!</p>`;
-    } else {
-        document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
+        document.getElementById('awardModal').style.display = 'flex';
+        return;
+    } 
+    
+    document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
+    
+    let db = await openCinenetDB();
+    let transaction = db.transaction(["mediaStore"], "readonly");
+    let store = transaction.objectStore("mediaStore");
+    let request = store.get(Number(item.id));
+
+    request.onsuccess = function() {
+        let record = request.result;
         
-        let db = await openCinenetDB();
-        let transaction = db.transaction(["mediaStore"], "readonly");
-        let store = transaction.objectStore("mediaStore");
-        let request = store.get(Number(item.id));
+        if(!record) {
+            modalContainer.innerHTML = `<p style="color:#d9534f; text-align:center;">Error: Media file not found in Database!</p>`;
+            document.getElementById('awardModal').style.display = 'flex';
+            return;
+        }
 
-        request.onsuccess = function() {
-            let record = request.result;
-            let fileSrc = record ? record.fileData : item.fileData;
+        let fileSrc = record.fileData;
 
-            if(item.type === 'Photograph') {
-                modalContainer.innerHTML = `
-                    <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
-                    <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
-                `;
-            } else {
-                modalContainer.innerHTML = `
-                    <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
-                        <source src="${fileSrc}" type="video/mp4">
-                        Your browser does not support video playback.
-                    </video>
-                    <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
-                `;
-            }
-        };
-    }
+        if(item.type === 'Photograph') {
+            modalContainer.innerHTML = `
+                <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
+                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
+            `;
+        } else {
+            modalContainer.innerHTML = `
+                <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
+                    <source src="${fileSrc}" type="video/mp4">
+                    Your browser does not support video playback.
+                </video>
+                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
+            `;
+        }
+    };
     document.getElementById('awardModal').style.display = 'flex';
 }
 

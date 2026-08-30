@@ -95,12 +95,6 @@
             });
             localStorage.setItem('cinenet_users', JSON.stringify(users));
 
-            let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
-            if(currentUser && currentUser.roll === rollNo) {
-                currentUser.team = null;
-                localStorage.setItem('cinenet_current_user', JSON.stringify(currentUser));
-            }
-
             alert('User successfully removed from the team by Admin!');
             loadUserTable();
         }
@@ -138,7 +132,7 @@
                     html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
                 } else {
                     html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                    filteredItems.forEach((item, index) => {
+                    filteredItems.forEach(item => {
                         html += `
                             <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:200px; word-break:break-all;">
@@ -168,8 +162,21 @@
             request.onsuccess = function() {
                 let selectedMedia = request.result;
                 if(selectedMedia) {
-                    localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                    alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
+                    // 🔥 CRITICAL FIX: Only store Metadata (No Video Data) to prevent Storage Full Error
+                    let winnerMetadata = {
+                        id: selectedMedia.id,
+                        team: selectedMedia.team,
+                        uploader: selectedMedia.uploader,
+                        title: selectedMedia.title,
+                        type: selectedMedia.type
+                    };
+
+                    try {
+                        localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(winnerMetadata));
+                        alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${category.toUpperCase()}`);
+                    } catch(e) {
+                        alert("Storage Error! Please clear browser cache.");
+                    }
                 } else {
                     alert('Error: Record ID not found.');
                 }
