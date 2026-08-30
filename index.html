@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
     <header>
         <div class="logo">CINENET</div>
         <nav>
@@ -20,7 +19,6 @@
         </nav>
     </header>
 
-    <!-- User Authentication Section -->
     <section id="auth" class="main-section container" style="display:none;">
         <div class="auth-card">
             <div class="tab-triggers">
@@ -46,7 +44,6 @@
         </div>
     </section>
 
-    <!-- Home Page -->
     <section id="home" class="main-section container">
         <div class="best-month-banner">
             <h2>🏆 Teams Best of the Month</h2>
@@ -69,19 +66,16 @@
         </div>
     </section>
 
-    <!-- Edits Page -->
     <section id="edits" class="main-section container" style="display:none;">
         <h2>Edits Showcase</h2>
         <div class="grid-layout" id="dedicatedEditsGrid"></div>
     </section>
 
-    <!-- My Team Workspace Page -->
     <section id="my-team" class="main-section container" style="display:none;">
         <h2>My Team Workspace</h2>
         <div id="myTeamContainer"></div>
     </section>
 
-    <!-- Teams Page -->
     <section id="teams-page" class="main-section container" style="display:none;">
         <h2>Explore Teams</h2>
         <p>Tap on any team to view their works, members, and join options.</p>
@@ -118,7 +112,6 @@
 
     <script src="script.js"></script>
     <script>
-        // Ensure home feed loads immediately when page opens
         window.onload = function() {
             loadHomeFeed();
         };

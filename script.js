@@ -225,7 +225,7 @@ function loadMyTeamWorkspace() {
     container.innerHTML = `
         <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
-            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs (Max 20s for videos):</p>
             
             <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                 <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
@@ -237,7 +237,7 @@ function loadMyTeamWorkspace() {
                     </select>
                     <input type="text" id="mediaTitle" placeholder="Title / Description" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
                     <input type="file" id="mediaFile" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
-                    <button onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer;">Upload to Home Feed</button>
+                    <button type="button" onclick="handleVideoUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                 </div>
             </div>
 
@@ -262,14 +262,15 @@ function loadMyTeamWorkspace() {
     `;
 }
 
-function processUpload(teamName) {
+// Fixed robust upload function with 20s validation for WhatsApp/Local videos
+function handleVideoUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let type = document.getElementById('mediaType').value;
     let title = document.getElementById('mediaTitle').value;
     let fileInput = document.getElementById('mediaFile');
-    
-    if(!title) {
-        alert('Please enter a title!');
+
+    if(!title.trim()) {
+        alert('Please enter a title or description!');
         return;
     }
     if(fileInput.files.length === 0) {
@@ -278,8 +279,36 @@ function processUpload(teamName) {
     }
 
     let file = fileInput.files[0];
-    let reader = new FileReader();
 
+    // If it's a video, check duration to be <= 20 seconds
+    if(type === 'Short Film' || type === 'Edit') {
+        let videoElem = document.createElement('video');
+        let objectUrl = URL.createObjectURL(file);
+        videoElem.src = objectUrl;
+
+        videoElem.onloadedmetadata = function() {
+            URL.revokeObjectURL(objectUrl);
+            if(videoElem.duration > 21) {
+                alert(`Video duration is ${Math.round(videoElem.duration)} seconds! Please select a video of 20 seconds or less.`);
+                return;
+            }
+            proceedFileReader(file, teamName, type, title, currentUser.name);
+        };
+
+        // Fallback if metadata fails to load instantly
+        setTimeout(() => {
+            if(!videoElem.duration) {
+                proceedFileReader(file, teamName, type, title, currentUser.name);
+            }
+        }, 1000);
+    } else {
+        // Photograph
+        proceedFileReader(file, teamName, type, title, currentUser.name);
+    }
+}
+
+function proceedFileReader(file, teamName, type, title, uploaderName) {
+    let reader = new FileReader();
     reader.onload = function(e) {
         let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
         allContent.push({
@@ -287,14 +316,13 @@ function processUpload(teamName) {
             type: type,
             title: title,
             fileData: e.target.result,
-            uploader: currentUser.name
+            uploader: uploaderName
         });
         localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
         alert('Successfully uploaded and published to Home Page feed!');
         loadMyTeamWorkspace();
     };
-
     reader.readAsDataURL(file);
 }
 
