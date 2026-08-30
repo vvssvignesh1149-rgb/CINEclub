@@ -110,7 +110,6 @@
             loadUserTable();
         }
 
-        // Award Manager for 3 Categories
         function loadAwardManager(category) {
             if (!db) {
                 alert("Database loading... Please try again.");
@@ -150,7 +149,7 @@
                                     <h4 style="color:#ffcc00;">${item.title}</h4>
                                     <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: ${item.team}</p>
                                 </div>
-                                <button onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer;">Set Winner</button>
+                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer;">Set Winner</button>
                             </div>
                         `;
                     });
@@ -161,7 +160,10 @@
         }
 
         function setAwardWinner(category, mediaId) {
-            if (!db) return;
+            if (!db) {
+                alert("Database not ready.");
+                return;
+            }
             let transaction = db.transaction(["mediaStore"], "readonly");
             let store = transaction.objectStore("mediaStore");
             let request = store.get(Number(mediaId));
@@ -170,10 +172,13 @@
                 let selectedMedia = request.result;
                 if(selectedMedia) {
                     localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.charAt(0).toUpperCase() + category.slice_q || category}.`);
+                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.toUpperCase()}.`);
                 } else {
-                    alert('Error: Record not found.');
+                    alert('Error: Record not found in database.');
                 }
+            };
+            request.onerror = function() {
+                alert('Database read error.');
             };
         }
     </script>
