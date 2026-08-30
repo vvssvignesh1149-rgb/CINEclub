@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CINENET - Cinematography Club</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">CINENET</div>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#teams">Teams</a>
+            <a href="#films">Short Films</a>
+            <a href="#join">Join Club</a>
+            <a href="admin.html" class="admin-link">Admin Panel</a>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <h1>Welcome to CINENET</h1>
+        <p>Cinematography Club - Frame Smashers, Lens Legends & More</p>
+    </section>
+
+    <section id="teams" class="container">
+        <h2>Our 10 Dynamic Teams</h2>
+        <div class="team-grid">
+            <div class="team-card" onclick="openTeam('Frame Smashers')">Frame Smashers</div>
+            <div class="team-card" onclick="openTeam('Lens Legends')">Lens Legends</div>
+            <div class="team-card" onclick="openTeam('Cut & Create')">Cut & Create</div>
+            <div class="team-card" onclick="openTeam('Pixel Pirates')">Pixel Pirates</div>
+            <div class="team-card" onclick="openTeam('Directors Cut')">Directors Cut</div>
+            <div class="team-card" onclick="openTeam('Focus Phantoms')">Focus Phantoms</div>
+        </div>
+    </section>
+
+    <section id="films" class="container">
+        <h2>Short Films & Work</h2>
+        <div class="film-card">
+            <iframe width="100%" height="200" src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="YouTube video" allowfullscreen></iframe>
+            <h3>Team Name: Frame Smashers</h3>
+            <p>15 Seconds Teaser / Full Short Film</p>
+        </div>
+    </section>
+
+    <section id="join" class="container">
+        <h2>Join the Club</h2>
+        <form id="joinForm">
+            <input type="text" id="name" placeholder="Full Name" required>
+            <input type="text" id="rollno" placeholder="Roll Number (Password)" required>
+            <input type="text" id="branch" placeholder="Branch" required>
+            <input type="text" id="year" placeholder="Year" required>
+            <select id="teamSelect">
+                <option value="Frame Smashers">Frame Smashers</option>
+                <option value="Lens Legends">Lens Legends</option>
+                <option value="Cut & Create">Cut & Create</option>
+                <option value="Pixel Pirates">Pixel Pirates</option>
+                <option value="Directors Cut">Directors Cut</option>
+                <option value="Focus Phantoms">Focus Phantoms</option>
+            </select>
+            <button type="submit">Join Team</button>
+        </form>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
