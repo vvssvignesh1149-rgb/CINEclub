@@ -311,7 +311,10 @@ function loadMyTeamWorkspace() {
                                         `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
                                     }
                                     <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-                                    <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-top:10px; font-weight:bold;">Delete Upload</button>
+                                    <div style="display:flex; gap:10px; margin-top:10px;">
+                                        <button onclick="editMediaTitle(${item.id}, '${item.title.replace(/'/g, "\\'")}')" style="background:#f0ad4e; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Edit Title</button>
+                                        <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
+                                    </div>
                                 </div>
                             `).join('')}
                     </div>
@@ -365,6 +368,30 @@ function processUpload(teamName) {
     reader.readAsDataURL(file);
 }
 
+// Edit Title/Description function
+function editMediaTitle(id, currentTitle) {
+    let newTitle = prompt("Enter new title / description:", currentTitle);
+    if(newTitle === null || !newTitle.trim()) return;
+
+    let transaction = db.transaction(["mediaStore"], "readwrite");
+    let store = transaction.objectStore("mediaStore");
+    let getRequest = store.get(id);
+
+    getRequest.onsuccess = function() {
+        let data = getRequest.result;
+        if(data) {
+            data.title = newTitle.trim();
+            let updateRequest = store.put(data);
+
+            updateRequest.onsuccess = function() {
+                alert('Title updated successfully!');
+                loadMyTeamWorkspace();
+                loadHomeFeed();
+            };
+        }
+    };
+}
+
 // Delete media item function
 function deleteMedia(id) {
     if(!confirm("Are you sure you want to delete this upload?")) return;
@@ -376,6 +403,7 @@ function deleteMedia(id) {
     request.onsuccess = function() {
         alert('Upload deleted successfully!');
         loadMyTeamWorkspace();
+        loadHomeFeed();
     };
 
     request.onerror = function() {
