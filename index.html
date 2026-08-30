@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CINENET - Cinematography Club</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
     <header>
         <div style="display:flex; align-items:center; gap:12px;">
             <div class="logo">CINENET</div>
-            <!-- Fallback error handler so broken image icon doesn't show up if filename differs -->
             <img src="logo.png" alt="Logo" onerror="this.src='https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=100&q=80'" onclick="handleLogoTripleTap()" style="height:38px; width:38px; object-fit:contain; cursor:pointer; border-radius:50%;" title="Triple tap for Admin">
         </div>
         <nav>
@@ -51,29 +52,21 @@
 
     <!-- Home Page -->
     <section id="home" class="main-section container">
-        <!-- Teams Best of the Month - 3 Cinematic Cards Layout -->
         <div class="best-month-banner">
             <h2 style="text-align:center; margin-bottom:20px;">🏆 Teams Best of the Month</h2>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
-                
-                <!-- Card 1: Best Filmmaker -->
                 <div id="bestCard_filmmaker" class="team-card-img" onclick="openAwardOutput('filmmaker')">
                     <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">🎬 Best Filmmaker</h3>
                     <div id="bestName_filmmaker"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
-
-                <!-- Card 2: Best Photographer -->
                 <div id="bestCard_photographer" class="team-card-img" onclick="openAwardOutput('photographer')">
                     <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">📸 Best Photographer</h3>
                     <div id="bestName_photographer"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
-
-                <!-- Card 3: Best Editor -->
                 <div id="bestCard_editor" class="team-card-img" onclick="openAwardOutput('editor')">
                     <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">✂️ Best Editor</h3>
                     <div id="bestName_editor"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
-
             </div>
         </div>
 
@@ -130,7 +123,7 @@
             <div class="team-card-img" onclick="openTeamInterface('Motion Mavericks')">Motion Mavericks</div>
             <div class="team-card-img" onclick="openTeamInterface('Visual Voyagers')">Visual Voyagers</div>
             <div class="team-card-img" onclick="openTeamInterface('Shutter Squad')">Shutter Squad</div>
-            <div class="code-card team-card-img" onclick="openTeamInterface('Cine Titans')">Cine Titans</div>
+            <div class="team-card-img" onclick="openTeamInterface('Cine Titans')">Cine Titans</div>
         </div>
 
         <div id="teamInterfaceView" style="margin-top: 40px; display:none; border-top: 2px solid #333; padding-top: 20px;">
@@ -157,12 +150,10 @@
         function handleLogoTripleTap() {
             logoTapCount++;
             if (logoTapCount === 1) {
-                tapTimer = setTimeout(() => {
-                    logoTapCount = 0;
-                }, 600);
+                tapTimer = setTimeout(() => { logoTapCount = 0; }, 600);
             } else if (logoTapCount === 3) {
                 clearTimeout(tapTimer);
-                logoTapCount= 0;
+                logoTapCount = 0;
                 let enteredPin = prompt("🔐 Enter Secret Admin PIN:");
                 if (enteredPin === "CINEMA2026") {
                     window.location.href = "admin.html";

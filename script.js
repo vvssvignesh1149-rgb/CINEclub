@@ -1,3 +1,9 @@
+// 🔥 SUPABASE CONFIGURATION (Replace with your Supabase URL and Anon Key)
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 function showSection(sectionId) {
     document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -22,20 +28,6 @@ function formatDescriptionWithLinks(text) {
     let urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
         return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
-    });
-}
-
-function openCinenetDB() {
-    return new Promise((resolve, reject) => {
-        let request = indexedDB.open("CinenetMediaDB", 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (e) => {
-            let db = e.target.result;
-            if (!db.objectStoreNames.contains("mediaStore")) {
-                db.createObjectStore("mediaStore", { keyPath: "id", autoIncrement: true });
-            }
-        };
     });
 }
 
@@ -86,39 +78,37 @@ async function openAwardOutput(category) {
     
     document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
     
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.get(Number(item.id));
+    // Fetch from Supabase Table
+    let { data: record, error } = await supabaseClient
+        .from('mediaStore')
+        .select('*')
+        .eq('id', item.id)
+        .single();
 
-    request.onsuccess = function() {
-        let record = request.result;
-        
-        if(!record) {
-            modalContainer.innerHTML = `<p style="color:#d9534f; text-align:center;">Error: Media file not found in Database!</p>`;
-            document.getElementById('awardModal').style.display = 'flex';
-            return;
-        }
+    if(error || !record) {
+        modalContainer.innerHTML = `<p style="color:#d9534f; text-align:center;">Error: Media file not found in Cloud Database!</p>`;
+        document.getElementById('awardModal').style.display = 'flex';
+        return;
+    }
 
-        let fileSrc = record.fileData;
+    let fileSrc = record.file_url;
 
-        if(item.type === 'Photograph') {
-            modalContainer.innerHTML = `
-                <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
-                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
-            `;
-        } else {
-            modalContainer.innerHTML = `
-                <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
-                    <source src="${fileSrc}" type="video/mp4">
-                    Your browser does not support video playback.
-                </video>
-                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
-            `;
-        }
-    };
+    if(item.type === 'Photograph') {
+        modalContainer.innerHTML = `
+            <img src="${fileSrc}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
+            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
+        `;
+    } else {
+        modalContainer.innerHTML = `
+            <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
+                <source src="${fileSrc}" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
+        `;
+    }
     document.getElementById('awardModal').style.display = 'flex';
 }
 
@@ -128,81 +118,69 @@ function closeModal() {
 }
 
 async function loadHomeFeed() {
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let { data: allContent, error } = await supabaseClient.from('mediaStore').select('*');
+    if(error) { allContent = []; }
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
+    let shortFilmsGrid = document.getElementById('homeShortFilmsGrid');
+    let editsGrid = document.getElementById('homeEditsGrid');
+    let photosGrid = document.getElementById('homePhotosGrid');
 
-        let shortFilmsGrid = document.getElementById('homeShortFilmsGrid');
-        let editsGrid = document.getElementById('homeEditsGrid');
-        let photosGrid = document.getElementById('homePhotosGrid');
+    if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
 
-        if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
+    let shortFilms = allContent.filter(c => c.type === 'Short Film');
+    let edits = allContent.filter(c => c.type === 'Edit');
+    let photographs = allContent.filter(c => c.type === 'Photograph');
 
-        let shortFilms = allContent.filter(c => c.type === 'Short Film');
-        let edits = allContent.filter(c => c.type === 'Edit');
-        let photographs = allContent.filter(c => c.type === 'Photograph');
+    shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
+        shortFilms.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.file_url}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
-        shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
-            shortFilms.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
+    editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
+        edits.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.file_url}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
-        editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
-            edits.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
-
-        photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
-            photographs.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <img src="${item.fileData}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
-                </div>
-            `).join('');
-    };
+    photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
+        photographs.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <img src="${item.file_url}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
+            </div>
+        `).join('');
 }
 
 async function loadDedicatedEdits() {
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let { data: allContent, error } = await supabaseClient.from('mediaStore').select('*');
+    if(error) allContent = [];
+    let edits = allContent.filter(c => c.type === 'Edit');
+    let grid = document.getElementById('dedicatedEditsGrid');
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let edits = allContent.filter(c => c.type === 'Edit');
-        let grid = document.getElementById('dedicatedEditsGrid');
+    if(!grid) return;
 
-        if(!grid) return;
-
-        grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
-            edits.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="160" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
-    };
+    grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
+        edits.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="160" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.file_url}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 }
 
 function switchAuth(tab) {
@@ -219,43 +197,51 @@ function switchAuth(tab) {
     }
 }
 
-// 🔥 Updated Signup with Duplicate Prevention (Name & Roll No check)
-function handleSignup(e) {
+// 🔥 Supabase Cloud Signup
+async function handleSignup(e) {
     e.preventDefault();
     const nameInput = document.getElementById('suName').value.trim();
     const rollInput = document.getElementById('suRoll').value.trim();
     
-    const newUser = {
+    let { data: users, error } = await supabaseClient.from('cinenet_users').select('*');
+    if(error) users = [];
+
+    let existingUser = users.find(u => u.roll.toLowerCase() === rollInput.toLowerCase() || u.name.toLowerCase() === nameInput.toLowerCase());
+    if(existingUser) {
+        alert('❌ An account with this Roll Number or Name already exists in Cloud! Please Login directly.');
+        switchAuth('login');
+        return;
+    }
+
+    let { error: insertError } = await supabaseClient.from('cinenet_users').insert([{
         name: nameInput,
         roll: rollInput,
         branch: document.getElementById('suBranch').value.trim(),
         year: document.getElementById('suYear').value.trim(),
         team: null
-    };
+    }]);
 
-    let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-    
-    // Check if Roll No or Name already exists
-    let existingUser = users.find(u => u.roll.toLowerCase() === newUser.roll.toLowerCase() || u.name.toLowerCase() === newUser.name.toLowerCase());
-    
-    if(existingUser) {
-        alert('❌ An account with this Roll Number or Name already exists! Please Login directly.');
-        switchAuth('login');
+    if(insertError) {
+        alert('❌ Signup failed: ' + insertError.message);
         return;
     }
 
-    users.push(newUser);
-    localStorage.setItem('cinenet_users', JSON.stringify(users));
-    alert('✅ Sign Up Successful! Please Login with your credentials.');
+    alert('✅ Sign Up Successful in Cloud! Please Login.');
     switchAuth('login');
 }
 
-function handleLogin(e) {
+// 🔥 Supabase Cloud Login
+async function handleLogin(e) {
     e.preventDefault();
     const name = document.getElementById('liName').value.trim();
     const roll = document.getElementById('liRoll').value.trim();
 
-    let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+    let { data: users, error } = await supabaseClient.from('cinenet_users').select('*');
+    if(error || !users) {
+        alert('❌ Database connection error.');
+        return;
+    }
+
     let user = users.find(u => u.name.toLowerCase() === name.toLowerCase() && u.roll.toLowerCase() === roll.toLowerCase());
 
     if(user) {
@@ -263,7 +249,7 @@ function handleLogin(e) {
         alert('🎉 Login Successful!');
         showSection('home');
     } else {
-        alert('❌ Invalid Credentials or Account not found. Please Sign Up first.');
+        alert('❌ Invalid Credentials or Account not found.');
     }
 }
 
@@ -303,55 +289,49 @@ async function openTeamInterface(teamName) {
         joinContainer.innerHTML = `<button onclick="confirmJoinTeam('${teamName}')" class="primary-btn" style="background:#28a745;">Join This Team</button>`;
     }
 
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let { data: allContent } = await supabaseClient.from('mediaStore').select('*');
+    let teamContent = (allContent || []).filter(c => c.team === teamName);
+    let workGrid = document.getElementById('teamWorkGrid');
+    
+    workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
+        teamContent.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <span class="team-tag">${item.type}</span>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                ${item.type === 'Photograph' ? 
+                    `<img src="${item.file_url}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
+                    `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
+                }
+                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let teamContent = allContent.filter(c => c.team === teamName);
-        let workGrid = document.getElementById('teamWorkGrid');
-        
-        workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
-            teamContent.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <span class="team-tag">${item.type}</span>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    ${item.type === 'Photograph' ? 
-                        `<img src="${item.fileData}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
-                        `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
-                    }
-                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-                </div>
-            `).join('');
-    };
-
-    let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-    let teamMembers = users.filter(u => u.team === teamName);
+    let { data: users } = await supabaseClient.from('cinenet_users').select('*');
+    let teamMembers = (users || []).filter(u => u.team === teamName);
     let memberListEl = document.getElementById('activeTeamMemberList');
 
     memberListEl.innerHTML = teamMembers.length === 0 ? '<p style="color:#888;">No members in this team yet.</p>' :
         teamMembers.map(m => `<div style="padding: 6px 0; border-bottom: 1px solid #222;"><strong>${m.name}</strong> - ${m.branch} (${m.year} Year)</div>`).join('');
 }
 
-function confirmJoinTeam(teamName) {
+async function confirmJoinTeam(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     if(!currentUser) return;
 
-    let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-    users = users.map(u => {
-        if(u.roll === currentUser.roll) {
-            u.team = teamName;
-            currentUser.team = teamName;
-        }
-        return u;
-    });
+    let { error } = await supabaseClient
+        .from('cinenet_users')
+        .update({ team: teamName })
+        .eq('roll', currentUser.roll);
 
-    localStorage.setItem('cinenet_users', JSON.stringify(users));
+    if(error) {
+        alert('❌ Error joining team.');
+        return;
+    }
+
+    currentUser.team = teamName;
     localStorage.setItem('cinenet_current_user', JSON.stringify(currentUser));
 
-    alert(`Successfully joined ${teamName}!`);
+    alert(`🎉 Successfully joined ${teamName}!`);
     updateUserStatusDisplay();
     openTeamInterface(teamName);
 }
@@ -366,141 +346,121 @@ async function loadMyTeamWorkspace() {
     }
 
     let teamName = currentUser.team;
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let { data: allContent } = await supabaseClient.from('mediaStore').select('*');
+    let teamContent = (allContent || []).filter(c => c.team === teamName);
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let teamContent = allContent.filter(c => c.team === teamName);
-
-        container.innerHTML = `
-            <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
-                <h3 style="color:#e50914;">${teamName} Workspace</h3>
-                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
-                
-                <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
-                    <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                            <option value="Short Film">Short Film (Video)</option>
-                            <option value="Edit">Edit (Video)</option>
-                            <option value="Photograph">Photograph (Image)</option>
-                        </select>
-                        <input type="text" id="mediaTitle" placeholder="Title / Description (with links if any)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
-                        <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
-                    </div>
-                </div>
-
-                <div style="margin-top:30px;">
-                    <h4>Your Team's Uploads</h4>
-                    <div class="grid-layout" style="margin-top:15px;">
-                        ${teamContent.length === 0 ? '<p style="color:#888;">No uploads yet.</p>' : 
-                            teamContent.map(item => `
-                                <div class="card" style="background:#1f1f1f;">
-                                    <span class="team-tag">${item.type}</span>
-                                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                                    ${item.type === 'Photograph' ? 
-                                        `<img src="${item.fileData}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
-                                        `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
-                                    }
-                                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-                                    <div style="display:flex; gap:10px; margin-top:10px;">
-                                        <button onclick="editMediaTitle(${item.id})" style="background:#f0ad4e; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Edit Title</button>
-                                        <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                    </div>
+    container.innerHTML = `
+        <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
+            <h3 style="color:#e50914;">${teamName} Workspace</h3>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs to Cloud:</p>
+            
+            <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
+                <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <option value="Short Film">Short Film (Video)</option>
+                        <option value="Edit">Edit (Video)</option>
+                        <option value="Photograph">Photograph (Image)</option>
+                    </select>
+                    <input type="text" id="mediaTitle" placeholder="Title / Description (with links if any)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                    <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button type="button" onclick="processCloudUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Cloud</button>
                 </div>
             </div>
-        `;
-    };
+
+            <div style="margin-top:30px;">
+                <h4>Your Team's Cloud Uploads</h4>
+                <div class="grid-layout" style="margin-top:15px;">
+                    ${teamContent.length === 0 ? '<p style="color:#888;">No uploads yet.</p>' : 
+                        teamContent.map(item => `
+                            <div class="card" style="background:#1f1f1f;">
+                                <span class="team-tag">${item.type}</span>
+                                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                                ${item.type === 'Photograph' ? 
+                                    `<img src="${item.file_url}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
+                                    `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
+                                }
+                                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                                <div style="display:flex; gap:10px; margin-top:10px;">
+                                    <button onclick="deleteCloudMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function processUpload(teamName) {
+// 🔥 Supabase Cloud Storage File Upload & DB Insert
+async function processCloudUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let type = document.getElementById('mediaType').value;
-    let title = document.getElementById('mediaTitle').value;
+    let title = document.getElementById('mediaTitle').value.trim();
     let fileInput = document.getElementById('mediaFile');
     
-    if(!title.trim()) {
+    if(!title) {
         alert('Please enter a title!');
         return;
     }
     if(fileInput.files.length === 0) {
-        alert('Please select a video or image file!');
+        alert('Please select a file to upload!');
         return;
     }
 
     let file = fileInput.files[0];
-    let reader = new FileReader();
+    let fileExt = file.name.split('.').pop();
+    let fileName = `${Date.now()}.${fileExt}`;
+    let filePath = `${teamName}/${fileName}`;
 
-    reader.onload = async function(e) {
-        let db = await openCinenetDB();
-        let transaction = db.transaction(["mediaStore"], "readwrite");
-        let store = transaction.objectStore("mediaStore");
+    alert('⏳ Uploading file to Supabase Cloud Storage... Please wait.');
 
-        let newItem = {
-            team: teamName,
-            type: type,
-            title: title,
-            fileData: e.target.result,
-            uploader: currentUser.name
-        };
+    // Upload to Supabase Storage Bucket ('cinenet-bucket')
+    let { data: storageData, error: storageError } = await supabaseClient.storage
+        .from('cinenet-bucket')
+        .upload(filePath, file);
 
-        let request = store.add(newItem);
-        request.onsuccess = function() {
-            alert('Successfully uploaded and stored safely in database!');
-            loadMyTeamWorkspace();
-            loadHomeFeed();
-        };
-        request.onerror = function() {
-            alert('Upload failed due to storage limits.');
-        };
-    };
+    if (storageError) {
+        alert('❌ Upload failed: ' + storageError.message);
+        return;
+    }
 
-    reader.readAsDataURL(file);
-}
+    // Get Public URL
+    let { data: publicUrlData } = supabaseClient.storage
+        .from('cinenet-bucket')
+        .getPublicUrl(filePath);
 
-async function editMediaTitle(id) {
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readwrite");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.get(Number(id));
+    let fileUrl = publicUrlData.publicUrl;
 
-    request.onsuccess = function() {
-        let item = request.result;
-        if(!item) return;
+    // Insert Record into Supabase Table ('mediaStore')
+    let { error: dbError } = await supabaseClient.from('mediaStore').insert([{
+        team: teamName,
+        type: type,
+        title: title,
+        file_url: fileUrl,
+        uploader: currentUser.name
+    }]);
 
-        let newTitle = prompt("Enter new title / description:", item.title);
-        if(newTitle === null || !newTitle.trim()) return;
+    if (dbError) {
+        alert('❌ Database entry failed: ' + dbError.message);
+        return;
+    }
 
-        item.title = newTitle.trim();
-        store.put(item);
-
-        alert('Title updated successfully!');
-        loadMyTeamWorkspace();
-        loadHomeFeed();
-    };
-}
-
-async function deleteMedia(id) {
-    if(!confirm("Are you sure you want to delete this upload?")) return;
-
-    let db = await openCinenetDB();
-    let transaction = db.transaction(["mediaStore"], "readwrite");
-    let store = transaction.objectStore("mediaStore");
-    store.delete(Number(id));
-
-    alert('Upload deleted successfully!');
+    alert('🎉 Successfully uploaded to Cloud Database & Storage!');
     loadMyTeamWorkspace();
     loadHomeFeed();
 }
 
-window.onload = function() {
+async function deleteCloudMedia(id) {
+    if(!confirm("Are you sure you want to delete this cloud upload?")) return;
+
+    let { error } = await supabaseClient.from('mediaStore').delete().eq('id', id);
+    if(error) {
+        alert('❌ Delete failed.');
+        return;
+    }
+
+    alert('✅ Deleted successfully from cloud!');
+    loadMyTeamWorkspace();
     loadHomeFeed();
-    loadAwardsBanners();
-};
+}
