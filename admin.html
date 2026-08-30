@@ -28,6 +28,18 @@
 
     <script>
         const SECRET_PIN = "CINEMA2026";
+        let db = null;
+
+        const dbRequest = indexedDB.open("CinenetMediaDB", 1);
+        dbRequest.onsuccess = function(event) {
+            db = event.target.result;
+        };
+        dbRequest.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains("mediaStore")) {
+                db.createObjectStore("mediaStore", { keyPath: "id", autoIncrement: true });
+            }
+        };
 
         function verifyAdmin() {
             const entered = document.getElementById('adminSecretPin').value;
@@ -94,65 +106,75 @@
         }
 
         function loadAwardManager(category) {
-            let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-            let filteredItems = [];
-
-            let titleText = "";
-            if(category === 'filmmaker') {
-                filteredItems = allContent.filter(c => c.type === 'Short Film');
-                titleText = "Choose Best Filmmaker (Short Films)";
-            } else if(category === 'photographer') {
-                filteredItems = allContent.filter(c => c.type === 'Photograph');
-                titleText = "Choose Best Photographer (Photographs)";
-            } else if(category === 'editor') {
-                filteredItems = allContent.filter(c => c.type === 'Edit');
-                titleText = "Choose Best Editor (Edits)";
+            if (!db) {
+                alert("Database loading... Please try again.");
+                return;
             }
 
-            let html = `<h3>${titleText}</h3>
-                        <p style="color:#aaa; margin-bottom:15px;">Select submission to feature team name & details on Home Page:</p>`;
-            
-            if(filteredItems.length === 0) {
-                html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
-            } else {
-                html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                filteredItems.forEach((item, index) => {
-                    // Use index to avoid any ID matching issues
-                    html += `
-                        <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-                            <div style="flex:1; min-width:200px; word-break:break-all;">
-                                <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
-                                <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.getAll();
+
+            request.onsuccess = function() {
+                let allContent = request.result || [];
+                let filteredItems = [];
+
+                let titleText = "";
+                if(category === 'filmmaker') {
+                    filteredItems = allContent.filter(c => c.type === 'Short Film');
+                    titleText = "Choose Best Filmmaker (Short Films)";
+                } else if(category === 'photographer') {
+                    filteredItems = allContent.filter(c => c.type === 'Photograph');
+                    titleText = "Choose Best Photographer (Photographs)";
+                } else if(category === 'editor') {
+                    filteredItems = allContent.filter(c => c.type === 'Edit');
+                    titleText = "Choose Best Editor (Edits)";
+                }
+
+                let html = `<h3>${titleText}</h3>
+                            <p style="color:#aaa; margin-bottom:15px;">Select submission to feature team name & details on Home Page:</p>`;
+                
+                if(filteredItems.length === 0) {
+                    html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
+                } else {
+                    html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
+                    filteredItems.forEach(item => {
+                        html += `
+                            <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:200px; word-break:break-all;">
+                                    <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
+                                    <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
+                                </div>
+                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
                             </div>
-                            <button type="button" onclick="setAwardWinner('${category}', ${index})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            document.getElementById('adminDataDisplay').innerHTML = html;
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                document.getElementById('adminDataDisplay').innerHTML = html;
+            };
         }
 
-        function setAwardWinner(category, itemIndex) {
-            let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-            let filteredItems = [];
-            
-            if(category === 'filmmaker') {
-                filteredItems = allContent.filter(c => c.type === 'Short Film');
-            } else if(category === 'photographer') {
-                filteredItems = allContent.filter(c => c.type === 'Photograph');
-            } else if(category === 'editor') {
-                filteredItems = allContent.filter(c => c.type === 'Edit');
+        function setAwardWinner(category, mediaId) {
+            if (!db) {
+                alert("Database not ready.");
+                return;
             }
 
-            let selectedMedia = filteredItems[itemIndex];
-            
-            if (selectedMedia) {
-                localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
-            } else {
-                alert('Error: Record index not found.');
-            }
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.get(Number(mediaId));
+
+            request.onsuccess = function() {
+                let selectedMedia = request.result;
+                if(selectedMedia) {
+                    // Save uniformly with lowercase key
+                    localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
+                    alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
+                } else {
+                    alert('Error: Record ID not found.');
+                }
+            };
         }
     </script>
 </body>

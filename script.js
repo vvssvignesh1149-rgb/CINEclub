@@ -25,7 +25,6 @@ function formatDescriptionWithLinks(text) {
     });
 }
 
-// Open IndexedDB Connection safely
 function openCinenetDB() {
     return new Promise((resolve, reject) => {
         let request = indexedDB.open("CinenetMediaDB", 1);
@@ -42,12 +41,19 @@ function openCinenetDB() {
 
 // Load 3 Award Winners onto Home Page Team Cards
 function loadAwardsBanners() {
-    let categories = ['filmmaker', 'photographer', 'editor'];
+    let categories = [
+        { key: 'filmmaker', label: 'filmmaker' },
+        { key: 'photographer', label: 'photographer' },
+        { key: 'editor', label: 'editor' }
+    ];
 
     categories.forEach(cat => {
-        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`));
-        let cardEl = document.getElementById(`bestCard_${cat}`);
-        let nameEl = document.getElementById(`bestName_${cat}`);
+        // Check both lowercase and uppercase storage keys for full safety
+        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat.key}`)) || 
+                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.key.toUpperCase()}`));
+        
+        let cardEl = document.getElementById(`bestCard_${cat.key}`);
+        let nameEl = document.getElementById(`bestName_${cat.key}`);
 
         if (item && cardEl && nameEl) {
             cardEl.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
@@ -67,7 +73,9 @@ function loadAwardsBanners() {
 }
 
 async function openAwardOutput(category) {
-    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
+    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`)) || 
+               JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`));
+               
     let modalContainer = document.getElementById('modalContentContainer');
 
     if (!item) {
@@ -75,7 +83,6 @@ async function openAwardOutput(category) {
     } else {
         document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
         
-        // Fetch original file data from IndexedDB using item ID
         let db = await openCinenetDB();
         let transaction = db.transaction(["mediaStore"], "readonly");
         let store = transaction.objectStore("mediaStore");
