@@ -8,14 +8,12 @@
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
-    <!-- Secret Pin Lock -->
     <div id="adminLoginBox" class="auth-card">
         <h3>Security Verification</h3>
         <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
         <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
@@ -143,7 +141,7 @@
                 }
 
                 let html = `<h3>${titleText}</h3>
-                            <p style="color:#aaa; margin-bottom:15px;">Select submission to feature on Home Page:</p>`;
+                            <p style="color:#aaa; margin-bottom:15px;">Select submission to feature team name & details on Home Page:</p>`;
                 
                 if(filteredItems.length === 0) {
                     html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
@@ -154,7 +152,7 @@
                             <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:200px; word-break:break-all;">
                                     <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
-                                    <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: ${item.team}</p>
+                                    <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
                                 </div>
                                 <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap;">Set Winner</button>
                             </div>
@@ -172,7 +170,7 @@
             
             if (selectedMedia) {
                 localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.toUpperCase()}.`);
+                alert(`Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
             } else {
                 alert('Error: Record matching ID not found.');
             }
