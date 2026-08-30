@@ -5,29 +5,79 @@
     <title>CINENET - Admin Panel</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container" style="text-align:center; margin-top: 100px;">
-        <h2>Admin Portal</h2>
-        <div id="loginBox">
-            <input type="password" id="adminPin" placeholder="Enter Secret PIN">
-            <button onclick="checkAdmin()">Login</button>
-        </div>
-        <div id="adminDashboard" style="display:none;">
-            <h3>Registered Users Data</h3>
-            <div id="userDataList"></div>
-        </div>
+<body class="container">
+    <h2>CINENET Admin Portal</h2>
+
+    <div id="adminLoginBox" class="auth-card">
+        <h3>Security Verification</h3>
+        <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
+        <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
+
+    <div id="adminDashboard" style="display:none;">
+        <button onclick="loadUserTable()" class="primary-btn">View All Registered Users</button>
+        <button onclick="loadTeamsRoster()" class="primary-btn" style="background:#222; border:1px solid #444; margin-left:10px;">Teams List & Members</button>
+
+        <div style="margin-top: 30px;" id="adminDataDisplay"></div>
+    </div>
+
     <script>
-        function checkAdmin() {
-            const secret = "CINEMA2026"; // Mee secret lock
-            const entered = document.getElementById("adminPin").value;
-            if(entered === secret) {
-                document.getElementById("loginBox").style.display = "none";
-                document.getElementById("adminDashboard").style.display = "block";
-                // Fetch data logic here
+        const SECRET_PIN = "CINEMA2026";
+
+        function verifyAdmin() {
+            const entered = document.getElementById('adminSecretPin').value;
+            if(entered === SECRET_PIN) {
+                document.getElementById('adminLoginBox').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadUserTable();
             } else {
-                alert("Wrong Secret PIN!");
+                alert('Incorrect Secret PIN!');
             }
+        }
+
+        function loadUserTable() {
+            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+            let html = `<h3>All Registered Users Data</h3>
+                        <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; background:#181818; color:#fff;">
+                            <tr style="background:#e50914;"><th style="padding:10px;">Name</th><th>Roll No</th><th>Branch</th><th>Year</th><th>Assigned Team</th></tr>`;
+            
+            if(users.length === 0) {
+                html += `<tr><td colspan="5" style="text-align:center; padding:15px;">No users registered yet.</td></tr>`;
+            } else {
+                users.forEach(u => {
+                    html += `<tr><td style="padding:8px;">${u.name}</td><td>${u.roll}</td><td>${u.branch}</td><td>${u.year}</td><td>${u.team || 'None'}</td></tr>`;
+                });
+            }
+            html += `</table>`;
+            document.getElementById('adminDataDisplay').innerHTML = html;
+        }
+
+        function loadTeamsRoster() {
+            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+            const teams = [
+                "Frame Smashers", "Lens Legends", "Cut & Create", "Pixel Pirates", 
+                "Directors Cut", "Focus Phantoms", "Motion Mavericks", "Visual Voyagers", 
+                "Shutter Squad", "Cine Titans"
+            ];
+
+            let html = `<h3>Teams Roster List</h3>`;
+            teams.forEach(t => {
+                let members = users.filter(u => u.team === t);
+                html += `<div style="background:#161616; border:1px solid #333; padding:15px; margin-top:10px; border-radius:5px;">
+                            <h4 style="color:#e50914;">${t} (${members.length} Members)</h4>`;
+                if(members.length === 0) {
+                    html += `<p style="color:#888; font-size:14px;">No members joined yet.</p>`;
+                } else {
+                    html += `<ul>`;
+                    members.forEach(m => {
+                        html += `<li>${m.name} - ${m.branch} (${m.year} Year) [Roll: ${m.roll}]</li>`;
+                    });
+                    html += `</ul>`;
+                }
+                html += `</div>`;
+            });
+
+            document.getElementById('adminDataDisplay').innerHTML = html;
         }
     </script>
 </body>

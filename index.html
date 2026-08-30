@@ -7,99 +7,126 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
     <header>
         <div class="logo">CINENET</div>
         <nav>
-            <a href="#auth">Login / Signup</a>
-            <a href="#home">Home Page</a>
-            <a href="admin.html">Admin Panel</a>
+            <a href="#" onclick="showSection('home')">Home</a>
+            <a href="#" onclick="showSection('teams-page')">Teams</a>
+            <a href="#" onclick="showSection('edits')">Edits</a>
+            <a href="#" onclick="showSection('auth')">Login / Sign Up</a>
+            <a href="admin.html" class="admin-btn">Admin Panel</a>
         </nav>
     </header>
 
-    <!-- Auth Section (Login & Signup as per your wireframe) -->
-    <section id="auth" class="container">
-        <div class="auth-box">
-            <div class="tab-btns">
-                <button onclick="switchTab('signup')" id="tabSignup" class="active-btn">Sign Up</button>
-                <button onclick="switchTab('login')" id="tabLogin">Login</button>
+    <section id="auth" class="main-section container" style="display:none;">
+        <div class="auth-card">
+            <div class="tab-triggers">
+                <button onclick="switchAuth('signup')" id="btnSignupTab" class="active-tab">Sign Up</button>
+                <button onclick="switchAuth('login')" id="btnLoginTab">Login</button>
             </div>
-
-            <!-- Signup Form -->
+            
             <form id="signupForm" onsubmit="handleSignup(event)">
                 <h3>Student Sign Up</h3>
-                <input type="text" id="sName" placeholder="Name" required>
-                <input type="text" id="sRoll" placeholder="Roll No (Will be Password)" required>
-                <input type="text" id="sBranch" placeholder="Branch" required>
-                <input type="text" id="sYear" placeholder="Year" required>
-                <button type="submit">Register & Sign Up</button>
+                <input type="text" id="suName" placeholder="Full Name" required>
+                <input type="text" id="suRoll" placeholder="Roll No (Will be used as Password)" required>
+                <input type="text" id="suBranch" placeholder="Branch" required>
+                <input type="text" id="suYear" placeholder="Year" required>
+                <button type="submit" class="primary-btn">Register</button>
             </form>
 
-            <!-- Login Form -->
             <form id="loginForm" onsubmit="handleLogin(event)" style="display:none;">
                 <h3>Student Login</h3>
-                <input type="text" id="lName" placeholder="Username (Name)" required>
-                <input type="password" id="lRoll" placeholder="Password (Roll No)" required>
-                <button type="submit">Login to Interface</button>
+                <input type="text" id="liName" placeholder="Username (Name)" required>
+                <input type="password" id="liRoll" placeholder="Password (Roll No)" required>
+                <button type="submit" class="primary-btn">Login</button>
             </form>
         </div>
     </section>
 
-    <!-- Home Page Interface (Scroll Down) -->
-    <section id="home" class="container" style="display:none;">
-        <h2>Welcome to CINENET Interface</h2>
-        <p>Scroll down to explore Teams, Short Films, and Photographs!</p>
+    <section id="home" class="main-section container">
+        <div class="best-month-banner">
+            <h2>🏆 Teams Best of the Month</h2>
+            <div class="banner-box">Featured Cinematic Masterpiece of the Month</div>
+        </div>
+
+        <div class="content-block">
+            <h3>Short Films</h3>
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="video-placeholder">15 Seconds Video Teaser</div>
+                    <p class="url-text">YouTube URL: <a href="https://youtube.com/shorts/sample1" target="_blank">Watch Here</a></p>
+                    <span class="team-tag">Team: Frame Smashers</span>
+                </div>
+                <div class="card">
+                    <div class="video-placeholder">15 Seconds Video Teaser</div>
+                    <p class="url-text">YouTube URL: <a href="https://youtube.com/shorts/sample2" target="_blank">Watch Here</a></p>
+                    <span class="team-tag">Team: Lens Legends</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h3>Photographs</h3>
+            <div class="grid-layout">
+                <div class="photo-card">
+                    <div class="photo-placeholder">🖼️ Photo Frame</div>
+                    <p>Photographer: Rahul<br><small>Team: Pixel Pirates</small></p>
+                </div>
+                <div class="photo-card">
+                    <div class="photo-placeholder">🖼️ Photo Frame</div>
+                    <p>Photographer: Ananya<br><small>Team: Focus Phantoms</small></p>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <script>
-        function switchTab(tab) {
-            if(tab === 'signup') {
-                document.getElementById('signupForm').style.display = 'flex';
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('tabSignup').classList.add('active-btn');
-                document.getElementById('tabLogin').classList.remove('active-btn');
-            } else {
-                document.getElementById('signupForm').style.display = 'none';
-                document.getElementById('loginForm').style.display = 'flex';
-                document.getElementById('tabLogin').classList.add('active-btn');
-                document.getElementById('tabSignup').classList.remove('active-btn');
-            }
-        }
+    <section id="edits" class="main-section container" style="display:none;">
+        <h2>Edits Showcase</h2>
+        <div class="grid-layout">
+            <div class="card">
+                <div class="video-placeholder">Dynamic Edit Preview</div>
+                <p class="url-text">YouTube URL: <a href="https://youtube.com/watch?v=edit1" target="_blank">Watch Edit</a></p>
+                <span class="team-tag">Team: Cut & Create</span>
+            </div>
+            <div class="card">
+                <div class="video-placeholder">VFX Montage Preview</div>
+                <p class="url-text">YouTube URL: <a href="https://youtube.com/watch?v=edit2" target="_blank">Watch Edit</a></p>
+                <span class="team-tag">Team: Directors Cut</span>
+            </div>
+        </div>
+    </section>
 
-        function handleSignup(e) {
-            e.preventDefault();
-            const user = {
-                name: document.getElementById('sName').value,
-                roll: document.getElementById('sRoll').value,
-                branch: document.getElementById('sBranch').value,
-                year: document.getElementById('sYear').value
-            };
+    <section id="teams-page" class="main-section container" style="display:none;">
+        <div class="join-club-container">
+            <h2>Join the Club & Choose Your Team</h2>
+            <p>Select your team from the 10 inbuilt options below. You can switch or exit teams anytime!</p>
             
-            // Saving data locally to simulate backend / admin storage
-            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-            users.push(user);
-            localStorage.setItem('cinenet_users', JSON.stringify(users));
-            
-            alert('Sign Up Successful! Now you can Login.');
-            switchTab('login');
-        }
+            <div class="user-current-status" id="userStatusBox" style="display:none;">
+                <p>Current Team: <span id="myAssignedTeam">None</span></p>
+                <button onclick="exitTeam()" class="danger-btn">Exit Current Team</button>
+            </div>
+        </div>
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const name = document.getElementById('lName').value;
-            const roll = document.getElementById('lRoll').value;
+        <h3>Available Teams (10 Inbuilt Options)</h3>
+        <div class="teams-grid">
+            <button class="team-btn" onclick="joinTeam('Frame Smashers')">Frame Smashers</button>
+            <button class="team-btn" onclick="joinTeam('Lens Legends')">Lens Legends</button>
+            <button class="team-btn" onclick="joinTeam('Cut & Create')">Cut & Create</button>
+            <button class="team-btn" onclick="joinTeam('Pixel Pirates')">Pixel Pirates</button>
+            <button class="team-btn" onclick="joinTeam('Directors Cut')">Directors Cut</button>
+            <button class="team-btn" onclick="joinTeam('Focus Phantoms')">Focus Phantoms</button>
+            <button class="team-btn" onclick="joinTeam('Motion Mavericks')">Motion Mavericks</button>
+            <button class="team-btn" onclick="joinTeam('Visual Voyagers')">Visual Voyagers</button>
+            <button class="team-btn" onclick="joinTeam('Shutter Squad')">Shutter Squad</button>
+            <button class="team-btn" onclick="joinTeam('Cine Titans')">Cine Titans</button>
+        </div>
 
-            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-            let validUser = users.find(u => u.name === name && u.roll === roll);
+        <div id="teamDetailView" style="margin-top: 30px; display:none;">
+            <h3 id="selectedTeamTitle">Team Members</h3>
+            <div id="teamMemberList" class="member-list-box"></div>
+        </div>
+    </section>
 
-            if(validUser) {
-                alert('Login Successful! Welcome to CINENET.');
-                document.getElementById('auth').style.display = 'none';
-                document.getElementById('home').style.display = 'block';
-            } else {
-                alert('Invalid Credentials or Please Sign Up First!');
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
