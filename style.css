@@ -149,7 +149,7 @@ input, select {
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 .team-card-img:hover {
-    transform: translateY(-5px;);
+    transform: translateY(-5px);
     border-color: #e50914;
     box-shadow: 0 6px 15px rgba(229, 9, 20, 0.4);
 }

@@ -138,7 +138,7 @@
                     html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
                 } else {
                     html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                    filteredItems.forEach(item => {
+                    filteredItems.forEach((item, index) => {
                         html += `
                             <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
                                 <div style="flex:1; min-width:200px; word-break:break-all;">
@@ -168,7 +168,6 @@
             request.onsuccess = function() {
                 let selectedMedia = request.result;
                 if(selectedMedia) {
-                    // Save uniformly with lowercase key
                     localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
                     alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
                 } else {
