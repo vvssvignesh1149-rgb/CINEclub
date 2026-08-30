@@ -7,16 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Navigation Bar with Logo & Triple-Tap Secret Admin -->
     <header>
-        <div class="logo">CINENET</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div class="logo">CINENET</div>
+            <!-- College Logo with Triple-Tap Secret Event -->
+            <img src="logo.png" alt="College Logo" onclick="handleLogoTripleTap()" style="height:35px; width:35px; object-fit:contain; cursor:pointer; border-radius:50%; border:1px solid #e50914;" title="CINENET Club">
+        </div>
         <nav>
             <a href="#" onclick="showSection('home')">Home</a>
             <a href="#" onclick="showSection('teams-page')">Teams</a>
             <a href="#" onclick="showSection('edits')">Edits</a>
             <a href="#" onclick="showSection('my-team')">My Team</a>
             <a href="#" onclick="showSection('auth')">Login / Sign Up</a>
-            <a href="admin.html" class="admin-btn">Admin Panel</a>
         </nav>
     </header>
 
@@ -54,21 +57,21 @@
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
                 
                 <!-- Card 1: Best Filmmaker -->
-                <div class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('filmmaker')">
+                <div id="bestCard_filmmaker" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('filmmaker')">
                     <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">🎬 Best Filmmaker</h3>
-                    <div id="bestName_filmmaker"><span style="color:#aaa; font-size:14px;">Not Set by Admin Yet</span></div>
+                    <div id="bestName_filmmaker"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
                 <!-- Card 2: Best Photographer -->
-                <div class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('photographer')">
+                <div id="bestCard_photographer" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('photographer')">
                     <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">📸 Best Photographer</h3>
-                    <div id="bestName_photographer"><span style="color:#aaa; font-size:14px;">Not Set by Admin Yet</span></div>
+                    <div id="bestName_photographer"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
                 <!-- Card 3: Best Editor -->
-                <div class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('editor')">
+                <div id="bestCard_editor" class="team-card-img" style="height:160px; flex-direction:column; text-align:center; padding:15px; cursor:pointer; display:flex; justify-content:center; align-items:center;" onclick="openAwardOutput('editor')">
                     <h3 style="color:#ffcc00; margin-bottom:5px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">✂️ Best Editor</h3>
-                    <div id="bestName_editor"><span style="color:#aaa; font-size:14px;">Not Set by Admin Yet</span></div>
+                    <div id="bestName_editor"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
                 </div>
 
             </div>
@@ -123,7 +126,7 @@
             <div class="team-card-img" onclick="openTeamInterface('Cut & Create')">Cut & Create</div>
             <div class="team-card-img" onclick="openTeamInterface('Pixel Pirates')">Pixel Pirates</div>
             <div class="team-card-img" onclick="openTeamInterface('Directors Cut')">Directors Cut</div>
-            <div class="team-card-img" onclick="openTeamInterface('Focus Phantoms')">Focus Phantoms</div>
+            <div class="team-card-img" onclick="openCardInterface('Focus Phantoms')">Focus Phantoms</div>
             <div class="team-card-img" onclick="openTeamInterface('Motion Mavericks')">Motion Mavericks</div>
             <div class="team-card-img" onclick="openTeamInterface('Visual Voyagers')">Visual Voyagers</div>
             <div class="team-card-img" onclick="openTeamInterface('Shutter Squad')">Shutter Squad</div>
@@ -148,6 +151,28 @@
 
     <script src="script.js"></script>
     <script>
+        // Secret Triple-Tap Handler for Logo to Open Admin Panel
+        let logoTapCount = 0;
+        let tapTimer = null;
+
+        function handleLogoTripleTap() {
+            logoTapCount++;
+            if (logoTapCount === 1) {
+                tapTimer = setTimeout(() => {
+                    logoTapCount = 0;
+                }, 600); // Reset within 600ms window
+            } else if (logoTapCount === 3) {
+                clearTimeout(tapTimer);
+                logoTapCount = 0;
+                let enteredPin = prompt("🔐 Enter Secret Admin PIN:");
+                if (enteredPin === "CINEMA2026") {
+                    window.location.href = "admin.html";
+                } else if (enteredPin !== null) {
+                    alert("❌ Incorrect Secret PIN!");
+                }
+            }
+        }
+
         window.onload = function() {
             loadHomeFeed();
             loadAwardsBanners();
