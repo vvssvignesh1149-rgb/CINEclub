@@ -8,16 +8,20 @@
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
+    <!-- Secret Pin Lock -->
     <div id="adminLoginBox" class="auth-card">
         <h3>Security Verification</h3>
         <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
         <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
 
+    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
-            <button onclick="loadBestFilmmakerManager()" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Filmmaker of the Month</button>
+            <button onclick="loadAwardManager('filmmaker')" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Filmmaker</button>
+            <button onclick="loadAwardManager('photographer')" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Photographer</button>
+            <button onclick="loadAwardManager('editor')" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Editor</button>
         </div>
         <div style="margin-top: 30px;" id="adminDataDisplay"></div>
     </div>
@@ -27,8 +31,19 @@
         let db;
         const dbRequest = indexedDB.open("CinenetMediaDB", 1);
 
+        dbRequest.onerror = function(event) {
+            console.error("IndexedDB error: " + event.target.errorCode);
+        };
+
         dbRequest.onsuccess = function(event) {
             db = event.target.result;
+        };
+
+        dbRequest.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains("mediaStore")) {
+                db.createObjectStore("mediaStore", { keyPath: "id", autoIncrement: true });
+            }
         };
 
         function verifyAdmin() {
@@ -95,32 +110,47 @@
             loadUserTable();
         }
 
-        // Admin Best Filmmaker Manager
-        function loadBestFilmmakerManager() {
-            if (!db) return;
+        // Award Manager for 3 Categories
+        function loadAwardManager(category) {
+            if (!db) {
+                alert("Database loading... Please try again.");
+                return;
+            }
             let transaction = db.transaction(["mediaStore"], "readonly");
             let store = transaction.objectStore("mediaStore");
             let request = store.getAll();
 
             request.onsuccess = function() {
                 let allContent = request.result || [];
-                let videos = allContent.filter(c => c.type === 'Short Film' || c.type === 'Edit');
+                let filteredItems = [];
 
-                let html = `<h3>Choose Best Filmmaker of the Month</h3>
-                            <p style="color:#aaa; margin-bottom:15px;">Select any uploaded video from the club submissions to feature as the Best Filmmaker on the Home Page:</p>`;
+                let titleText = "";
+                if(category === 'filmmaker') {
+                    filteredItems = allContent.filter(c => c.type === 'Short Film');
+                    titleText = "Choose Best Filmmaker (Short Films)";
+                } else if(category === 'photographer') {
+                    filteredItems = allContent.filter(c => c.type === 'Photograph');
+                    titleText = "Choose Best Photographer (Photographs)";
+                } else if(category === 'editor') {
+                    filteredItems = allContent.filter(c => c.type === 'Edit');
+                    titleText = "Choose Best Editor (Edits)";
+                }
+
+                let html = `<h3>${titleText}</h3>
+                            <p style="color:#aaa; margin-bottom:15px;">Select submission to feature on Home Page:</p>`;
                 
-                if(videos.length === 0) {
-                    html += `<p style="color:#888;">No video submissions available yet to feature.</p>`;
+                if(filteredItems.length === 0) {
+                    html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
                 } else {
                     html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                    videos.forEach(v => {
+                    filteredItems.forEach(item => {
                         html += `
                             <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
                                 <div>
-                                    <h4 style="color:#ffcc00;">${v.title}</h4>
-                                    <p style="font-size:13px; color:#aaa;">Maker: ${v.uploader} | Team: ${v.team}</p>
+                                    <h4 style="color:#ffcc00;">${item.title}</h4>
+                                    <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: ${item.team}</p>
                                 </div>
-                                <button onclick="setBestFilmmaker(${v.id})" class="primary-btn" style="background:#28a745;">Set as Best Filmmaker</button>
+                                <button onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer;">Set Winner</button>
                             </div>
                         `;
                     });
@@ -130,16 +160,19 @@
             };
         }
 
-        function setBestFilmmaker(mediaId) {
+        function setAwardWinner(category, mediaId) {
+            if (!db) return;
             let transaction = db.transaction(["mediaStore"], "readonly");
             let store = transaction.objectStore("mediaStore");
-            let request = store.get(mediaId);
+            let request = store.get(Number(mediaId));
 
             request.onsuccess = function() {
                 let selectedMedia = request.result;
                 if(selectedMedia) {
-                    localStorage.setItem('cinenet_best_filmmaker', JSON.stringify(selectedMedia));
-                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is now featured as Best Filmmaker of the Month.`);
+                    localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
+                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.charAt(0).toUpperCase() + category.slice_q || category}.`);
+                } else {
+                    alert('Error: Record not found.');
                 }
             };
         }

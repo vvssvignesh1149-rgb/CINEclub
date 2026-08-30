@@ -8,7 +8,7 @@ dbRequest.onerror = function(event) {
 dbRequest.onsuccess = function(event) {
     db = event.target.result;
     loadHomeFeed();
-    loadBestFilmmakerBanner();
+    loadAwardsBanners();
 };
 
 dbRequest.onupgradeneeded = function(event) {
@@ -32,7 +32,7 @@ function showSection(sectionId) {
     
     if(sectionId === 'home') {
         loadHomeFeed();
-        loadBestFilmmakerBanner();
+        loadAwardsBanners();
     }
     if(sectionId === 'teams-page') {
         updateUserStatusDisplay();
@@ -45,45 +45,53 @@ function showSection(sectionId) {
     }
 }
 
-// Load Admin chosen Best Filmmaker
-function loadBestFilmmakerBanner() {
-    let bestMaker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
-    if (bestMaker) {
-        let nameEl = document.getElementById('bestMakerName');
-        if(nameEl) {
-            nameEl.innerText = `${bestMaker.uploader} (${bestMaker.team})`;
-        }
-    } else {
-        let nameEl = document.getElementById('bestMakerName');
-        if(nameEl) {
-            nameEl.innerText = `Featured by Admin`;
-        }
-    }
+// Load 3 Award Winners onto Banners
+function loadAwardsBanners() {
+    let maker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
+    let photog = JSON.parse(localStorage.getItem('cinenet_best_photographer'));
+    let editor = JSON.parse(localStorage.getItem('cinenet_best_editor'));
+
+    let makerEl = document.getElementById('bestMakerName');
+    let photogEl = document.getElementById('bestPhotogName');
+    let editorEl = document.getElementById('bestEditorName');
+
+    if(makerEl) makerEl.innerText = maker ? `${maker.uploader} (${maker.team})` : 'Not Set by Admin';
+    if(photogEl) photogEl.innerText = photog ? `${photog.uploader} (${photog.team})` : 'Not Set by Admin';
+    if(editorEl) editorEl.innerText = editor ? `${editor.uploader} (${editor.team})` : 'Not Set by Admin';
 }
 
-// Open modal popup when user taps the Best Filmmaker banner
-function openBestFilmmakerOutput() {
-    let bestMaker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
+// Open modal popup when user taps any award card
+function openAwardOutput(category) {
+    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
     let modalContainer = document.getElementById('modalContentContainer');
 
-    if (!bestMaker) {
-        modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best Filmmaker for this month yet!</p>`;
+    if (!item) {
+        modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best ${category.toUpperCase()} for this month yet!</p>`;
     } else {
-        document.getElementById('modalTitle').innerText = `Best Filmmaker: ${bestMaker.uploader} (${bestMaker.team})`;
-        modalContainer.innerHTML = `
-            <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
-                <source src="${bestMaker.fileData}" type="video/mp4">
-                Your browser does not support video playback.
-            </video>
-            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(bestMaker.title)}</h4>
-            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${bestMaker.team} | Maker: ${bestMaker.uploader}</p>
-        `;
+        document.getElementById('modalTitle').innerText = `Best ${category.charAt(0).toUpperCase() + category.slice(1)}: ${item.uploader} (${item.team})`;
+        
+        if(item.type === 'Photograph') {
+            modalContainer.innerHTML = `
+                <img src="${item.fileData}" style="width:100%; height:300px; object-fit:cover; border-radius:6px;">
+                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Photographer: ${item.uploader}</p>
+            `;
+        } else {
+            modalContainer.innerHTML = `
+                <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
+                    <source src="${item.fileData}" type="video/mp4">
+                    Your browser does not support video playback.
+                </video>
+                <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${item.team} | Maker: ${item.uploader}</p>
+            `;
+        }
     }
-    document.getElementById('filmmakerModal').style.display = 'flex';
+    document.getElementById('awardModal').style.display = 'flex';
 }
 
 function closeModal() {
-    document.getElementById('filmmakerModal').style.display = 'none';
+    document.getElementById('awardModal').style.display = 'none';
     document.getElementById('modalContentContainer').innerHTML = '';
 }
 
