@@ -225,21 +225,20 @@ function loadMyTeamWorkspace() {
     container.innerHTML = `
         <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
-            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs (Max 20s for videos):</p>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
             
             <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                 <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
-                <form onsubmit="handleMediaUpload(event, '${teamName}')" style="display:flex; flex-direction:column; gap:10px;">
-                    <select id="mediaType" required style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <option value="">Select Type</option>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
                         <option value="Short Film">Short Film (Video)</option>
                         <option value="Edit">Edit (Video)</option>
                         <option value="Photograph">Photograph (Image)</option>
                     </select>
-                    <input type="text" id="mediaTitle" placeholder="Title / Description" required>
-                    <input type="file" id="mediaFile" required style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
-                    <button type="submit" class="primary-btn" style="background:#28a745;">Upload to Home Feed</button>
-                </form>
+                    <input type="text" id="mediaTitle" placeholder="Title / Description" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                    <input type="file" id="mediaFile" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer;">Upload to Home Feed</button>
+                </div>
             </div>
 
             <div style="margin-top:30px;">
@@ -263,31 +262,40 @@ function loadMyTeamWorkspace() {
     `;
 }
 
-function handleMediaUpload(event, teamName) {
-    event.preventDefault();
+function processUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let type = document.getElementById('mediaType').value;
     let title = document.getElementById('mediaTitle').value;
     let fileInput = document.getElementById('mediaFile');
+    
+    if(!title) {
+        alert('Please enter a title!');
+        return;
+    }
+    if(fileInput.files.length === 0) {
+        alert('Please select a file to upload!');
+        return;
+    }
+
     let file = fileInput.files[0];
-
-    if (!file) return;
-
     let reader = new FileReader();
+
     reader.onload = function(e) {
-        saveContent(teamName, type, title, e.target.result, currentUser.name);
+        let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+        allContent.push({
+            team: teamName,
+            type: type,
+            title: title,
+            fileData: e.target.result,
+            uploader: currentUser.name
+        });
+        localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+
+        alert('Successfully uploaded and published to Home Page feed!');
+        loadMyTeamWorkspace();
     };
+
     reader.readAsDataURL(file);
-}
-
-function saveContent(team, type, title, fileData, uploader) {
-    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-    allContent.push({ team, type, title, fileData, uploader });
-    localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
-
-    alert('Successfully uploaded and published to Home Page feed!');
-    loadHomeFeed();
-    showSection('home');
 }
 
 window.onload = function() {
