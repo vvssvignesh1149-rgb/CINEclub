@@ -234,18 +234,18 @@ function loadMyTeamWorkspace() {
     container.innerHTML = `
         <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
-            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits (Any resolution video), or Photographs:</p>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
             
             <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                 <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <select id="mediaType" onchange="toggleUploadInput()" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <option value="Short Film">Short Film (Video File)</option>
-                        <option value="Edit">Edit (Video File)</option>
-                        <option value="Photograph">Photograph (Image File)</option>
+                    <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <option value="Short Film">Short Film (Video)</option>
+                        <option value="Edit">Edit (Video)</option>
+                        <option value="Photograph">Photograph (Image)</option>
                     </select>
                     <input type="text" id="mediaTitle" placeholder="Title / Description" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                    <input type="file" id="mediaFile" accept="video/mp4,video/webm,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
                     <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                 </div>
             </div>
@@ -271,10 +271,6 @@ function loadMyTeamWorkspace() {
     `;
 }
 
-function toggleUploadInput() {
-    // Kept for UI alignment if needed
-}
-
 function processUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let type = document.getElementById('mediaType').value;
@@ -286,31 +282,31 @@ function processUpload(teamName) {
         return;
     }
     if(fileInput.files.length === 0) {
-        alert('Please select a video/image file!');
+        alert('Please select a video or image file!');
         return;
     }
 
     let file = fileInput.files[0];
 
-    // Read file using standard Blob / Object URL for smooth resolution support without crash
-    let reader = new FileReader();
-    
-    reader.onload = function(e) {
-        let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-        allContent.push({
-            team: teamName,
-            type: type,
-            title: title,
-            fileData: e.target.result, // Stores base64 stream playable by HTML5 video tag
-            uploader: currentUser.name
-        });
+    // Use URL.createObjectURL for instant streaming and bypass storage limit
+    let fileUrl = URL.createObjectURL(file);
+
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    allContent.push({
+        team: teamName,
+        type: type,
+        title: title,
+        fileData: fileUrl,
+        uploader: currentUser.name
+    });
+
+    try {
         localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
-
-        alert('Successfully uploaded and published with video player to Home Page!');
+        alert('Successfully uploaded and published to Home Page feed!');
         loadMyTeamWorkspace();
-    };
-
-    reader.readAsDataURL(file);
+    } catch (err) {
+        alert('Storage limit reached! Please try a slightly smaller file or clear browser cache.');
+    }
 }
 
 window.onload = function() {
