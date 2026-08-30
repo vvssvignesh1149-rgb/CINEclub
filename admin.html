@@ -8,21 +8,28 @@
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
-    <!-- Secret Pin Lock -->
     <div id="adminLoginBox" class="auth-card">
         <h3>Security Verification</h3>
         <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
         <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
-        <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
+            <button onclick="loadBestFilmmakerManager()" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Filmmaker of the Month</button>
+        </div>
         <div style="margin-top: 30px;" id="adminDataDisplay"></div>
     </div>
 
     <script>
         const SECRET_PIN = "CINEMA2026";
+        let db;
+        const dbRequest = indexedDB.open("CinenetMediaDB", 1);
+
+        dbRequest.onsuccess = function(event) {
+            db = event.target.result;
+        };
 
         function verifyAdmin() {
             const entered = document.getElementById('adminSecretPin').value;
@@ -86,6 +93,55 @@
 
             alert('User successfully removed from the team by Admin!');
             loadUserTable();
+        }
+
+        // Admin Best Filmmaker Manager
+        function loadBestFilmmakerManager() {
+            if (!db) return;
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.getAll();
+
+            request.onsuccess = function() {
+                let allContent = request.result || [];
+                let videos = allContent.filter(c => c.type === 'Short Film' || c.type === 'Edit');
+
+                let html = `<h3>Choose Best Filmmaker of the Month</h3>
+                            <p style="color:#aaa; margin-bottom:15px;">Select any uploaded video from the club submissions to feature as the Best Filmmaker on the Home Page:</p>`;
+                
+                if(videos.length === 0) {
+                    html += `<p style="color:#888;">No video submissions available yet to feature.</p>`;
+                } else {
+                    html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
+                    videos.forEach(v => {
+                        html += `
+                            <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <h4 style="color:#ffcc00;">${v.title}</h4>
+                                    <p style="font-size:13px; color:#aaa;">Maker: ${v.uploader} | Team: ${v.team}</p>
+                                </div>
+                                <button onclick="setBestFilmmaker(${v.id})" class="primary-btn" style="background:#28a745;">Set as Best Filmmaker</button>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                document.getElementById('adminDataDisplay').innerHTML = html;
+            };
+        }
+
+        function setBestFilmmaker(mediaId) {
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.get(mediaId);
+
+            request.onsuccess = function() {
+                let selectedMedia = request.result;
+                if(selectedMedia) {
+                    localStorage.setItem('cinenet_best_filmmaker', JSON.stringify(selectedMedia));
+                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is now featured as Best Filmmaker of the Month.`);
+                }
+            };
         }
     </script>
 </body>

@@ -1,4 +1,3 @@
-// IndexedDB Initialization for large video support
 let db;
 const dbRequest = indexedDB.open("CinenetMediaDB", 1);
 
@@ -9,6 +8,7 @@ dbRequest.onerror = function(event) {
 dbRequest.onsuccess = function(event) {
     db = event.target.result;
     loadHomeFeed();
+    loadBestFilmmakerBanner();
 };
 
 dbRequest.onupgradeneeded = function(event) {
@@ -18,15 +18,12 @@ dbRequest.onupgradeneeded = function(event) {
     }
 };
 
-// Helper function to auto-detect and convert URLs/Insta handles into clickable links
 function formatDescriptionWithLinks(text) {
     if (!text) return '';
-    // Match http/https links or standard URLs
     let urlRegex = /(https?:\/\/[^\s]+)/g;
-    let formatted = text.replace(urlRegex, function(url) {
+    return text.replace(urlRegex, function(url) {
         return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
     });
-    return formatted;
 }
 
 function showSection(sectionId) {
@@ -35,6 +32,7 @@ function showSection(sectionId) {
     
     if(sectionId === 'home') {
         loadHomeFeed();
+        loadBestFilmmakerBanner();
     }
     if(sectionId === 'teams-page') {
         updateUserStatusDisplay();
@@ -45,6 +43,48 @@ function showSection(sectionId) {
     if(sectionId === 'edits') {
         loadDedicatedEdits();
     }
+}
+
+// Load Admin chosen Best Filmmaker
+function loadBestFilmmakerBanner() {
+    let bestMaker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
+    if (bestMaker) {
+        let nameEl = document.getElementById('bestMakerName');
+        if(nameEl) {
+            nameEl.innerText = `${bestMaker.uploader} (${bestMaker.team})`;
+        }
+    } else {
+        let nameEl = document.getElementById('bestMakerName');
+        if(nameEl) {
+            nameEl.innerText = `Featured by Admin`;
+        }
+    }
+}
+
+// Open modal popup when user taps the Best Filmmaker banner
+function openBestFilmmakerOutput() {
+    let bestMaker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
+    let modalContainer = document.getElementById('modalContentContainer');
+
+    if (!bestMaker) {
+        modalContainer.innerHTML = `<p style="color:#aaa; text-align:center;">Admin has not selected a Best Filmmaker for this month yet!</p>`;
+    } else {
+        document.getElementById('modalTitle').innerText = `Best Filmmaker: ${bestMaker.uploader} (${bestMaker.team})`;
+        modalContainer.innerHTML = `
+            <video width="100%" height="300" controls autoplay style="border-radius:6px; background:#000;">
+                <source src="${bestMaker.fileData}" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+            <h4 style="margin-top:15px; color:#fff;">${formatDescriptionWithLinks(bestMaker.title)}</h4>
+            <p style="font-size:13px; color:#aaa; margin-top:5px;">Team: ${bestMaker.team} | Maker: ${bestMaker.uploader}</p>
+        `;
+    }
+    document.getElementById('filmmakerModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('filmmakerModal').style.display = 'none';
+    document.getElementById('modalContentContainer').innerHTML = '';
 }
 
 function loadHomeFeed() {
@@ -71,7 +111,6 @@ function loadHomeFeed() {
                 <div class="card" style="background:#1f1f1f;">
                     <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
                         <source src="${item.fileData}" type="video/mp4">
-                        Your browser does not support video playback.
                     </video>
                     <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
@@ -83,7 +122,6 @@ function loadHomeFeed() {
                 <div class="card" style="background:#1f1f1f;">
                     <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
                         <source src="${item.fileData}" type="video/mp4">
-                        Your browser does not support video playback.
                     </video>
                     <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
@@ -119,7 +157,6 @@ function loadDedicatedEdits() {
                 <div class="card" style="background:#1f1f1f;">
                     <video width="100%" height="160" controls preload="metadata" style="border-radius:4px; background:#000;">
                         <source src="${item.fileData}" type="video/mp4">
-                        Your browser does not support video playback.
                     </video>
                     <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
@@ -293,7 +330,7 @@ function loadMyTeamWorkspace() {
         container.innerHTML = `
             <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
                 <h3 style="color:#e50914;">${teamName} Workspace</h3>
-                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs (You can include YouTube/Instagram links in the title description):</p>
+                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
                 
                 <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                     <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
@@ -303,7 +340,7 @@ function loadMyTeamWorkspace() {
                             <option value="Edit">Edit (Video)</option>
                             <option value="Photograph">Photograph (Image)</option>
                         </select>
-                        <input type="text" id="mediaTitle" placeholder="Title / Description (e.g. My edit https://youtu.be/...)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <input type="text" id="mediaTitle" placeholder="Title / Description (with links if any)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
                         <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
                         <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                     </div>
@@ -369,6 +406,7 @@ function processUpload(teamName) {
         request.onsuccess = function() {
             alert('Successfully uploaded and stored permanently!');
             loadMyTeamWorkspace();
+            loadHomeFeed();
         };
 
         request.onerror = function() {
@@ -380,7 +418,7 @@ function processUpload(teamName) {
 }
 
 function editMediaTitle(id, currentTitle) {
-    let newTitle = prompt("Enter new title / description (You can add links):", currentTitle);
+    let newTitle = prompt("Enter new title / description:", currentTitle);
     if(newTitle === null || !newTitle.trim()) return;
 
     let transaction = db.transaction(["mediaStore"], "readwrite");
