@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <title>CINENET - Admin Panel</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
-    <!-- Secret Pin Lock -->
-    <div id="adminLoginBox" class="auth-card">
-        <h3>Security Verification</h3>
-        <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
-        <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
-    </div>
-
     <!-- Admin Dashboard -->
-    <div id="adminDashboard" style="display:none;">
+    <div id="adminDashboard" style="display:block;">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
             <button onclick="loadAwardManager('filmmaker')" class="primary-btn" style="background:#ffcc00; color:#000;">Set Best Filmmaker</button>
@@ -27,33 +22,33 @@
     </div>
 
     <script>
-        const SECRET_PIN = "CINEMA2026";
-        let db = null;
-
-        const dbRequest = indexedDB.open("CinenetMediaDB", 1);
-        dbRequest.onsuccess = function(event) {
-            db = event.target.result;
-        };
-        dbRequest.onupgradeneeded = function(event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains("mediaStore")) {
-                db.createObjectStore("mediaStore", { keyPath: "id", autoIncrement: true });
-            }
-        };
-
-        function verifyAdmin() {
-            const entered = document.getElementById('adminSecretPin').value;
-            if(entered === SECRET_PIN) {
-                document.getElementById('adminLoginBox').style.display = 'none';
-                document.getElementById('adminDashboard').style.display = 'block';
-                loadUserTable();
-            } else {
-                alert('Incorrect Secret PIN!');
-            }
+        // 🔥 SUPABASE CONFIGURATION
+        const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
+        
+        let supabaseClient = null;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (err) {
+            console.error("Supabase initialization error:", err);
         }
 
-        function loadUserTable() {
-            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+        // Page load avvagane users table load avvali
+        window.onload = function() {
+            if (!supabaseClient) {
+                document.getElementById('adminDataDisplay').innerHTML = `<p style="color:#d9534f; text-align:center;">Failed to initialize Supabase client. Check CDN script connection.</p>`;
+                return;
+            }
+            loadUserTable();
+        };
+
+        async function loadUserTable() {
+            let { data: users, error } = await supabaseClient.from('cinenet_users').select('*');
+            if(error) {
+                console.error("Error fetching users:", error.message);
+                users = [];
+            }
+
             let html = `<h3>Registered Users & Team Management</h3>
                         <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; background:#181818; color:#fff;">
                             <tr style="background:#e50914;">
@@ -66,7 +61,7 @@
                             </tr>`;
             
             if(users.length === 0) {
-                html += `<tr><td colspan="6" style="text-align:center; padding:15px;">No users registered yet.</td></tr>`;
+                html += `<tr><td colspan="6" style="text-align:center; padding:15px;">No users registered yet or connection error.</td></tr>`;
             } else {
                 users.forEach(u => {
                     html += `<tr>
@@ -85,101 +80,88 @@
             document.getElementById('adminDataDisplay').innerHTML = html;
         }
 
-        function adminRemoveTeam(rollNo) {
-            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-            users = users.map(u => {
-                if(u.roll === rollNo) {
-                    u.team = null;
-                }
-                return u;
-            });
-            localStorage.setItem('cinenet_users', JSON.stringify(users));
-            alert('User successfully removed from the team by Admin!');
+        async function adminRemoveTeam(rollNo) {
+            let { error } = await supabaseClient
+                .from('cinenet_users')
+                .update({ team: null })
+                .eq('roll', rollNo);
+
+            if(error) {
+                alert('❌ Failed to remove user from team: ' + error.message);
+                return;
+            }
+            alert('✅ User successfully removed from the team by Admin!');
             loadUserTable();
         }
 
-        function loadAwardManager(category) {
-            if (!db) {
-                alert("Database loading... Please try again.");
-                return;
+        async function loadAwardManager(category) {
+            let { data: allContent, error } = await supabaseClient.from('mediaStore').select('*');
+            if(error || !allContent) allContent = [];
+
+            let filteredItems = [];
+            let titleText = "";
+
+            if(category === 'filmmaker') {
+                filteredItems = allContent.filter(c => c.type === 'Short Film');
+                titleText = "Choose Best Filmmaker (Short Films)";
+            } else if(category === 'photographer') {
+                filteredItems = allContent.filter(c => c.type === 'Photograph');
+                titleText = "Choose Best Photographer (Photographs)";
+            } else if(category === 'editor') {
+                filteredItems = allContent.filter(c => c.type === 'Edit');
+                titleText = "Choose Best Editor (Edits)";
             }
 
-            let transaction = db.transaction(["mediaStore"], "readonly");
-            let store = transaction.objectStore("mediaStore");
-            let request = store.getAll();
-
-            request.onsuccess = function() {
-                let allContent = request.result || [];
-                let filteredItems = [];
-
-                let titleText = "";
-                if(category === 'filmmaker') {
-                    filteredItems = allContent.filter(c => c.type === 'Short Film');
-                    titleText = "Choose Best Filmmaker (Short Films)";
-                } else if(category === 'photographer') {
-                    filteredItems = allContent.filter(c => c.type === 'Photograph');
-                    titleText = "Choose Best Photographer (Photographs)";
-                } else if(category === 'editor') {
-                    filteredItems = allContent.filter(c => c.type === 'Edit');
-                    titleText = "Choose Best Editor (Edits)";
-                }
-
-                let html = `<h3>${titleText}</h3>
-                            <p style="color:#aaa; margin-bottom:15px;">Select submission to feature team name & details on Home Page:</p>`;
-                
-                if(filteredItems.length === 0) {
-                    html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
-                } else {
-                    html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-                    filteredItems.forEach(item => {
-                        html += `
-                            <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-                                <div style="flex:1; min-width:200px; word-break:break-all;">
-                                    <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
-                                    <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
-                                </div>
-                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
+            let html = `<h3>${titleText}</h3>
+                        <p style="color:#aaa; margin-bottom:15px;">Select submission to feature team name & details on Home Page:</p>`;
+            
+            if(filteredItems.length === 0) {
+                html += `<p style="color:#888;">No submissions found for this category yet.</p>`;
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
+                filteredItems.forEach(item => {
+                    html += `
+                        <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px; word-break:break-all;">
+                                <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
+                                <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
                             </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-                document.getElementById('adminDataDisplay').innerHTML = html;
-            };
+                            <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            document.getElementById('adminDataDisplay').innerHTML = html;
         }
 
-        function setAwardWinner(category, mediaId) {
-            if (!db) {
-                alert("Database not ready.");
+        async function setAwardWinner(category, mediaId) {
+            let { data: selectedMedia, error } = await supabaseClient
+                .from('mediaStore')
+                .select('*')
+                .eq('id', mediaId)
+                .single();
+
+            if(error || !selectedMedia) {
+                alert('Error: Record not found in database.');
                 return;
             }
 
-            let transaction = db.transaction(["mediaStore"], "readonly");
-            let store = transaction.objectStore("mediaStore");
-            let request = store.get(Number(mediaId));
-
-            request.onsuccess = function() {
-                let selectedMedia = request.result;
-                if(selectedMedia) {
-                    let winnerMetadata = {
-                        id: selectedMedia.id,
-                        team: selectedMedia.team,
-                        uploader: selectedMedia.uploader,
-                        title: selectedMedia.title,
-                        type: selectedMedia.type
-                    };
-
-                    try {
-                        let cleanCategory = category.trim().toLowerCase();
-                        localStorage.setItem(`cinenet_best_${cleanCategory}`, JSON.stringify(winnerMetadata));
-                        alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${cleanCategory.toUpperCase()}`);
-                    } catch(e) {
-                        alert("Storage Error!");
-                    }
-                } else {
-                    alert('Error: Record ID not found.');
-                }
+            let winnerMetadata = {
+                id: selectedMedia.id,
+                team: selectedMedia.team,
+                uploader: selectedMedia.uploader,
+                title: selectedMedia.title,
+                type: selectedMedia.type
             };
+
+            try {
+                let cleanCategory = category.trim().toLowerCase();
+                localStorage.setItem(`cinenet_best_${cleanCategory}`, JSON.stringify(winnerMetadata));
+                alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${cleanCategory.toUpperCase()}`);
+            } catch(e) {
+                alert("Storage Error!");
+            }
         }
     </script>
 </body>
