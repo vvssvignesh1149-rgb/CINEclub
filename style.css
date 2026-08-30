@@ -210,8 +210,8 @@ body {
     min-height: 80vh;
 }
 body {
-    background: linear-gradient(rgba(9, 10, 15, 0.92), rgba(9, 10, 15, 0.95)), 
-                url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1920&q=80');
+    background: linear-gradient(rgba(9, 10, 15, 0.82), rgba(9, 10, 15, 0.90)), 
+                url('background.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
