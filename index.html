@@ -46,33 +46,42 @@
         </div>
     </section>
 
-    <!-- Home Page -->
+    <!-- Home Page (Dynamic Feed for Short Films, Edits, and Photographs) -->
     <section id="home" class="main-section container">
         <div class="best-month-banner">
             <h2>🏆 Teams Best of the Month</h2>
             <div class="banner-box">Featured Cinematic Masterpiece</div>
         </div>
+
+        <!-- Short Films Section -->
         <div class="content-block">
-            <h3>Short Films</h3>
-            <div class="grid-layout">
-                <div class="card">
-                    <div class="video-placeholder">15 Seconds Video Teaser</div>
-                    <p class="url-text">YouTube URL: <a href="https://youtube.com" target="_blank">Watch Here</a></p>
-                    <span class="team-tag">Team: Frame Smashers</span>
-                </div>
+            <h3>🎬 Short Films</h3>
+            <div class="grid-layout" id="homeShortFilmsGrid">
+                <!-- Dynamically loaded from uploaded team videos -->
+            </div>
+        </div>
+
+        <!-- Edits Section -->
+        <div class="content-block">
+            <h3>✂️ Edits</h3>
+            <div class="grid-layout" id="homeEditsGrid">
+                <!-- Dynamically loaded from uploaded edits -->
+            </div>
+        </div>
+
+        <!-- Photographs Section -->
+        <div class="content-block">
+            <h3>📸 Photographies</h3>
+            <div class="grid-layout" id="homePhotosGrid">
+                <!-- Dynamically loaded from uploaded photos -->
             </div>
         </div>
     </section>
 
-    <!-- Edits Page -->
+    <!-- Dedicated Edits Page -->
     <section id="edits" class="main-section container" style="display:none;">
         <h2>Edits Showcase</h2>
-        <div class="grid-layout">
-            <div class="card">
-                <div class="video-placeholder">Dynamic Edit Preview</div>
-                <span class="team-tag">Team: Cut & Create</span>
-            </div>
-        </div>
+        <div class="grid-layout" id="dedicatedEditsGrid"></div>
     </section>
 
     <!-- My Team Workspace Page -->
@@ -111,12 +120,7 @@
             <!-- Team Work Section -->
             <div class="content-block" style="background:#141414; padding:20px; border-radius:6px;">
                 <h3><span id="displayTeamNameForWork"></span> Works & Showreel</h3>
-                <div class="grid-layout" id="teamWorkGrid">
-                    <div class="card">
-                        <div class="video-placeholder">Team Short Film / Teaser</div>
-                        <span class="team-tag" id="workTeamTag">Team Work</span>
-                    </div>
-                </div>
+                <div class="grid-layout" id="teamWorkGrid"></div>
             </div>
 
             <!-- Members List of this Team -->
