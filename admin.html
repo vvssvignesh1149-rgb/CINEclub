@@ -94,7 +94,6 @@
                 return u;
             });
             localStorage.setItem('cinenet_users', JSON.stringify(users));
-
             alert('User successfully removed from the team by Admin!');
             loadUserTable();
         }
@@ -162,7 +161,6 @@
             request.onsuccess = function() {
                 let selectedMedia = request.result;
                 if(selectedMedia) {
-                    // 🔥 CRITICAL FIX: Only store Metadata (No Video Data) to prevent Storage Full Error
                     let winnerMetadata = {
                         id: selectedMedia.id,
                         team: selectedMedia.team,
@@ -172,10 +170,11 @@
                     };
 
                     try {
+                        // Save uniformly under exact lowercase key
                         localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(winnerMetadata));
                         alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${category.toUpperCase()}`);
                     } catch(e) {
-                        alert("Storage Error! Please clear browser cache.");
+                        alert("Storage Error!");
                     }
                 } else {
                     alert('Error: Record ID not found.');

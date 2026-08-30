@@ -41,18 +41,16 @@ function openCinenetDB() {
 
 // Load 3 Award Winners onto Home Page Team Cards
 function loadAwardsBanners() {
-    let categories = [
-        { key: 'filmmaker', label: 'filmmaker' },
-        { key: 'photographer', label: 'photographer' },
-        { key: 'editor', label: 'editor' }
-    ];
+    let categories = ['filmmaker', 'photographer', 'editor'];
 
     categories.forEach(cat => {
-        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat.key}`)) || 
-                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.key.toUpperCase()}`));
+        // Check all possible key variants in localStorage
+        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`)) || 
+                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.toUpperCase()}`)) ||
+                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.charAt(0).toUpperCase() + cat.slice(1)}`));
         
-        let cardEl = document.getElementById(`bestCard_${cat.key}`);
-        let nameEl = document.getElementById(`bestName_${cat.key}`);
+        let cardEl = document.getElementById(`bestCard_${cat}`);
+        let nameEl = document.getElementById(`bestName_${cat}`);
 
         if (item && cardEl && nameEl) {
             cardEl.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
@@ -71,10 +69,10 @@ function loadAwardsBanners() {
     });
 }
 
-// 🔥 CRITICAL FIX: Pulls video directly from IndexedDB without failing
 async function openAwardOutput(category) {
     let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`)) || 
-               JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`));
+               JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`)) ||
+               JSON.parse(localStorage.getItem(`cinenet_best_${category.charAt(0).toUpperCase() + category.slice(1)}`));
                
     let modalContainer = document.getElementById('modalContentContainer');
 
