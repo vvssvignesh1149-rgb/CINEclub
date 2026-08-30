@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar with Logo & Triple-Tap Secret Admin -->
+    <!-- Navigation Bar with Clean Gear Logo & Triple-Tap Secret Admin -->
     <header>
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
             <div class="logo">CINENET</div>
-            <!-- College Logo with Triple-Tap Secret Event -->
-            <img src="logo.png" alt="College Logo" onclick="handleLogoTripleTap()" style="height:35px; width:35px; object-fit:contain; cursor:pointer; border-radius:50%; border:1px solid #e50914;" title="CINENET Club">
+            <!-- Updated Clean Transparent Gear Logo with Triple-Tap Gesture -->
+            <img src="logo.png" alt="Logo" onclick="handleLogoTripleTap()" style="height:38px; width:38px; object-fit:contain; cursor:pointer;" title="CINENET Club">
         </div>
         <nav>
             <a href="#" onclick="showSection('home')">Home</a>
@@ -126,7 +126,7 @@
             <div class="team-card-img" onclick="openTeamInterface('Cut & Create')">Cut & Create</div>
             <div class="team-card-img" onclick="openTeamInterface('Pixel Pirates')">Pixel Pirates</div>
             <div class="team-card-img" onclick="openTeamInterface('Directors Cut')">Directors Cut</div>
-            <div class="team-card-img" onclick="openCardInterface('Focus Phantoms')">Focus Phantoms</div>
+            <div class="team-card-img" onclick="openTeamInterface('Focus Phantoms')">Focus Phantoms</div>
             <div class="team-card-img" onclick="openTeamInterface('Motion Mavericks')">Motion Mavericks</div>
             <div class="team-card-img" onclick="openTeamInterface('Visual Voyagers')">Visual Voyagers</div>
             <div class="team-card-img" onclick="openTeamInterface('Shutter Squad')">Shutter Squad</div>
@@ -151,7 +151,6 @@
 
     <script src="script.js"></script>
     <script>
-        // Secret Triple-Tap Handler for Logo to Open Admin Panel
         let logoTapCount = 0;
         let tapTimer = null;
 
@@ -160,7 +159,7 @@
             if (logoTapCount === 1) {
                 tapTimer = setTimeout(() => {
                     logoTapCount = 0;
-                }, 600); // Reset within 600ms window
+                }, 600);
             } else if (logoTapCount === 3) {
                 clearTimeout(tapTimer);
                 logoTapCount = 0;

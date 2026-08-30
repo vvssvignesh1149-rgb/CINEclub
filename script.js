@@ -39,15 +39,12 @@ function openCinenetDB() {
     });
 }
 
-// Load 3 Award Winners onto Home Page Team Cards with Robust Binding
+// Load 3 Award Winners onto Home Page Team Cards properly
 function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
     categories.forEach(cat => {
-        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`)) || 
-                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.toLowerCase()}`)) ||
-                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.toUpperCase()}`));
-        
+        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`));
         let cardEl = document.getElementById(`bestCard_${cat}`);
         let nameEl = document.getElementById(`bestName_${cat}`);
 
@@ -59,22 +56,26 @@ function loadAwardsBanners() {
                 cardEl.style.border = '2px solid #ffcc00';
             }
             
+            let cleanTitle = item.title ? item.title.replace(/(https?:\/\/[^\s]+)/g, '').trim() : '';
+            if(!cleanTitle) cleanTitle = "Masterpiece Winner";
+
             nameEl.innerHTML = `
                 <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-transform:uppercase; letter-spacing:1px;">${item.team}</div>
                 <div style="font-size:14px; color:#ffffff; font-weight:600; margin-top:4px;">Winner: ${item.uploader}</div>
-                <div style="font-size:12px; color:#cccccc; margin-top:2px; font-style:italic;">"${item.title ? item.title.substring(0, 25) : ''}..."</div>
+                <div style="font-size:12px; color:#cccccc; margin-top:2px; font-style:italic;">"${cleanTitle.substring(0, 25)}..."</div>
             `;
         } else if(nameEl) {
+            if(cardEl) {
+                cardEl.style.background = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
+                cardEl.style.border = '2px solid #333';
+            }
             nameEl.innerHTML = `<span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span>`;
         }
     });
 }
 
 async function openAwardOutput(category) {
-    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`)) || 
-               JSON.parse(localStorage.getItem(`cinenet_best_${category.toLowerCase()}`)) ||
-               JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`));
-               
+    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
     let modalContainer = document.getElementById('modalContentContainer');
 
     if (!item) {
