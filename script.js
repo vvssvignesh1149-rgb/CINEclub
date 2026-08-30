@@ -39,7 +39,7 @@ function openCinenetDB() {
     });
 }
 
-// Load 3 Award Winners onto Home Page Team Cards properly
+// Load 3 Award Winners onto Home Page Team Cards with Normal Border Style
 function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
@@ -50,10 +50,10 @@ function loadAwardsBanners() {
 
         if (item && nameEl) {
             if(cardEl) {
-                cardEl.style.background = `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
+                cardEl.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
                 cardEl.style.backgroundSize = 'cover';
                 cardEl.style.backgroundPosition = 'center';
-                cardEl.style.border = '2px solid #ffcc00';
+                cardEl.style.border = '2px solid #333'; // Normal border like other cards
             }
             
             let cleanTitle = item.title ? item.title.replace(/(https?:\/\/[^\s]+)/g, '').trim() : '';
@@ -66,7 +66,7 @@ function loadAwardsBanners() {
             `;
         } else if(nameEl) {
             if(cardEl) {
-                cardEl.style.background = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
+                cardEl.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
                 cardEl.style.border = '2px solid #333';
             }
             nameEl.innerHTML = `<span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span>`;

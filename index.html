@@ -11,8 +11,8 @@
     <header>
         <div style="display:flex; align-items:center; gap:12px;">
             <div class="logo">CINENET</div>
-            <!-- Make sure your image file is named logo.png in the folder -->
-            <img src="logo.png" alt="Cinenet Logo" onclick="handleLogoTripleTap()" style="height:36px; width:36px; object-fit:contain; cursor:pointer;" title="Triple tap for Admin">
+            <!-- Fallback error handler so broken image icon doesn't show up if filename differs -->
+            <img src="logo.png" alt="Logo" onerror="this.src='https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=100&q=80'" onclick="handleLogoTripleTap()" style="height:38px; width:38px; object-fit:contain; cursor:pointer; border-radius:50%;" title="Triple tap for Admin">
         </div>
         <nav>
             <a href="#" onclick="showSection('home')">Home</a>
@@ -130,7 +130,7 @@
             <div class="team-card-img" onclick="openTeamInterface('Motion Mavericks')">Motion Mavericks</div>
             <div class="team-card-img" onclick="openTeamInterface('Visual Voyagers')">Visual Voyagers</div>
             <div class="team-card-img" onclick="openTeamInterface('Shutter Squad')">Shutter Squad</div>
-            <div class="team-card-img" onclick="openTeamInterface('Cine Titans')">Cine Titans</div>
+            <div class="code-card team-card-img" onclick="openTeamInterface('Cine Titans')">Cine Titans</div>
         </div>
 
         <div id="teamInterfaceView" style="margin-top: 40px; display:none; border-top: 2px solid #333; padding-top: 20px;">
@@ -162,7 +162,7 @@
                 }, 600);
             } else if (logoTapCount === 3) {
                 clearTimeout(tapTimer);
-                logoTapCount = 0;
+                logoTapCount= 0;
                 let enteredPin = prompt("🔐 Enter Secret Admin PIN:");
                 if (enteredPin === "CINEMA2026") {
                     window.location.href = "admin.html";
