@@ -14,6 +14,7 @@
             <a href="#" onclick="showSection('home')">Home</a>
             <a href="#" onclick="showSection('teams-page')">Teams</a>
             <a href="#" onclick="showSection('edits')">Edits</a>
+            <a href="#" onclick="showSection('my-team')">My Team</a>
             <a href="#" onclick="showSection('auth')">Login / Sign Up</a>
             <a href="admin.html" class="admin-btn">Admin Panel</a>
         </nav>
@@ -56,7 +57,7 @@
             <div class="grid-layout">
                 <div class="card">
                     <div class="video-placeholder">15 Seconds Video Teaser</div>
-                    <p class="url-text">YouTube URL: <a href="#" target="_blank">Watch Here</a></p>
+                    <p class="url-text">YouTube URL: <a href="https://youtube.com" target="_blank">Watch Here</a></p>
                     <span class="team-tag">Team: Frame Smashers</span>
                 </div>
             </div>
@@ -74,12 +75,18 @@
         </div>
     </section>
 
+    <!-- My Team Workspace Page -->
+    <section id="my-team" class="main-section container" style="display:none;">
+        <h2>My Team Workspace</h2>
+        <div id="myTeamContainer"></div>
+    </section>
+
     <!-- Teams Page & Team Specific Interface -->
     <section id="teams-page" class="main-section container" style="display:none;">
         <h2>Explore Teams</h2>
         <p>Tap on any team to view their works, members, and join options.</p>
         
-        <div class="user-status-banner" id="userTeamStatusMsg" style="margin-bottom:20px; color:#ffcc00; font-weight:bold;"></div>
+        <div class="user-status-banner" id="userTeamStatusMsg" style="margin:15px 0; color:#ffcc00; font-weight:bold;"></div>
 
         <!-- 10 Inbuilt Team Buttons -->
         <div class="teams-grid">
@@ -95,18 +102,16 @@
             <button class="team-btn" onclick="openTeamInterface('Cine Titans')">Cine Titans</button>
         </div>
 
-        <!-- Team Specific Detailed Interface (Appears on clicking a team) -->
+        <!-- Team Specific Detailed Interface -->
         <div id="teamInterfaceView" style="margin-top: 40px; display:none; border-top: 2px solid #333; padding-top: 20px;">
             <h2 id="activeTeamTitle" style="color:#e50914;"></h2>
             
-            <div id="joinActionContainer" style="margin: 15px 0;">
-                <!-- Join Button dynamically controlled -->
-            </div>
+            <div id="joinActionContainer" style="margin: 15px 0;"></div>
 
-            <!-- Team Work Section (Reference to Home) -->
+            <!-- Team Work Section -->
             <div class="content-block" style="background:#141414; padding:20px; border-radius:6px;">
                 <h3><span id="displayTeamNameForWork"></span> Works & Showreel</h3>
-                <div class="grid-layout">
+                <div class="grid-layout" id="teamWorkGrid">
                     <div class="card">
                         <div class="video-placeholder">Team Short Film / Teaser</div>
                         <span class="team-tag" id="workTeamTag">Team Work</span>

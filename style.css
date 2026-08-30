@@ -116,7 +116,7 @@ form {
     flex-direction: column;
     gap: 15px;
 }
-input {
+input, select {
     padding: 12px;
     background: #222;
     border: 1px solid #333;
@@ -147,19 +147,4 @@ input {
 .team-btn:hover {
     background: #e50914;
     border-color: #e50914;
-}
-.danger-btn {
-    background: #d9534f;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-.member-list-box {
-    background: #181818;
-    padding: 15px;
-    border-radius: 5px;
-    border: 1px solid #333;
 }

@@ -59,7 +59,7 @@
                         <td>${u.year}</td>
                         <td>${u.team || 'None'}</td>
                         <td style="padding:8px; text-align:center;">
-                            ${u.team ? `<button onclick="adminRemoveTeam('${u.roll}')" style="background:#d9534f; color:#white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Remove from Team</button>` : 'No Team'}
+                            ${u.team ? `<button onclick="adminRemoveTeam('${u.roll}')" style="background:#d9534f; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Remove from Team</button>` : 'No Team'}
                         </td>
                     </tr>`;
                 });
@@ -68,7 +68,6 @@
             document.getElementById('adminDataDisplay').innerHTML = html;
         }
 
-        // Admin can remove user from their team
         function adminRemoveTeam(rollNo) {
             let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
             users = users.map(u => {
@@ -79,7 +78,6 @@
             });
             localStorage.setItem('cinenet_users', JSON.stringify(users));
 
-            // If current logged-in user matches, update their session too
             let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
             if(currentUser && currentUser.roll === rollNo) {
                 currentUser.team = null;
