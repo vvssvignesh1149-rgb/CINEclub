@@ -311,6 +311,7 @@ function loadMyTeamWorkspace() {
                                         `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
                                     }
                                     <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                                    <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-top:10px; font-weight:bold;">Delete Upload</button>
                                 </div>
                             `).join('')}
                     </div>
@@ -362,4 +363,22 @@ function processUpload(teamName) {
     };
 
     reader.readAsDataURL(file);
+}
+
+// Delete media item function
+function deleteMedia(id) {
+    if(!confirm("Are you sure you want to delete this upload?")) return;
+
+    let transaction = db.transaction(["mediaStore"], "readwrite");
+    let store = transaction.objectStore("mediaStore");
+    let request = store.delete(id);
+
+    request.onsuccess = function() {
+        alert('Upload deleted successfully!');
+        loadMyTeamWorkspace();
+    };
+
+    request.onerror = function() {
+        alert('Failed to delete upload.');
+    };
 }
