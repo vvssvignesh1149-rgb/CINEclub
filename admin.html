@@ -170,9 +170,9 @@
                     };
 
                     try {
-                        // Store using exact normalized lowercase key
-                        localStorage.setItem(`cinenet_best_${category.toLowerCase()}`, JSON.stringify(winnerMetadata));
-                        alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${category.toUpperCase()}`);
+                        let cleanCategory = category.trim().toLowerCase();
+                        localStorage.setItem(`cinenet_best_${cleanCategory}`, JSON.stringify(winnerMetadata));
+                        alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${cleanCategory.toUpperCase()}`);
                     } catch(e) {
                         alert("Storage Error!");
                     }
