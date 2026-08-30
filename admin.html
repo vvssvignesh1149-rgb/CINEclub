@@ -170,8 +170,8 @@
                     };
 
                     try {
-                        // Save uniformly under exact lowercase key
-                        localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(winnerMetadata));
+                        // Store using exact normalized lowercase key
+                        localStorage.setItem(`cinenet_best_${category.toLowerCase()}`, JSON.stringify(winnerMetadata));
                         alert(`✅ Winner Set Successfully!\nTeam: ${winnerMetadata.team}\nWinner: ${winnerMetadata.uploader}\nCategory: Best ${category.toUpperCase()}`);
                     } catch(e) {
                         alert("Storage Error!");

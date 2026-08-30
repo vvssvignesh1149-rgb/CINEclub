@@ -39,20 +39,17 @@ function openCinenetDB() {
     });
 }
 
-// Load 3 Award Winners onto Home Page Team Cards with High Contrast Styling
+// Load 3 Award Winners onto Home Page Team Cards
 function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
     categories.forEach(cat => {
-        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`)) || 
-                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.toUpperCase()}`)) ||
-                   JSON.parse(localStorage.getItem(`cinenet_best_${cat.charAt(0).toUpperCase() + cat.slice(1)}`));
+        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`));
         
         let cardEl = document.getElementById(`bestCard_${cat}`);
         let nameEl = document.getElementById(`bestName_${cat}`);
 
         if (item && cardEl && nameEl) {
-            // High contrast overlay so details are super clear on top of background
             cardEl.style.background = `linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
             cardEl.style.backgroundSize = 'cover';
             cardEl.style.backgroundPosition = 'center';
@@ -64,16 +61,13 @@ function loadAwardsBanners() {
                 <div style="font-size:12px; color:#cccccc; margin-top:2px; font-style:italic;">"${item.title ? item.title.substring(0, 25) : ''}..."</div>
             `;
         } else if(cardEl && nameEl) {
-            nameEl.innerHTML = `<span style="color:#888; font-size:13px;">Not Set by Admin Yet</span>`;
+            nameEl.innerHTML = `<span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span>`;
         }
     });
 }
 
 async function openAwardOutput(category) {
-    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`)) || 
-               JSON.parse(localStorage.getItem(`cinenet_best_${category.toUpperCase()}`)) ||
-               JSON.parse(localStorage.getItem(`cinenet_best_${category.charAt(0).toUpperCase() + category.slice(1)}`));
-               
+    let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
     let modalContainer = document.getElementById('modalContentContainer');
 
     if (!item) {
