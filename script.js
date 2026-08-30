@@ -45,19 +45,31 @@ function showSection(sectionId) {
     }
 }
 
-// Load 3 Award Winners onto Banners
+// Load 3 Award Winners onto Cinematic Team Cards on Home Page
 function loadAwardsBanners() {
-    let maker = JSON.parse(localStorage.getItem('cinenet_best_filmmaker'));
-    let photog = JSON.parse(localStorage.getItem('cinenet_best_photographer'));
-    let editor = JSON.parse(localStorage.getItem('cinenet_best_editor'));
+    let categories = ['filmmaker', 'photographer', 'editor'];
 
-    let makerEl = document.getElementById('bestMakerName');
-    let photogEl = document.getElementById('bestPhotogName');
-    let editorEl = document.getElementById('bestEditorName');
+    categories.forEach(cat => {
+        let item = JSON.parse(localStorage.getItem(`cinenet_best_${cat}`));
+        let cardEl = document.getElementById(`bestCard_${cat}`);
+        let nameEl = document.getElementById(`bestName_${cat}`);
 
-    if(makerEl) makerEl.innerText = maker ? `${maker.uploader} (${maker.team})` : 'Not Set by Admin';
-    if(photogEl) photogEl.innerText = photog ? `${photog.uploader} (${photog.team})` : 'Not Set by Admin';
-    if(editorEl) editorEl.innerText = editor ? `${editor.uploader} (${editor.team})` : 'Not Set by Admin';
+        if (item && cardEl && nameEl) {
+            // Set team card background image styling dynamically
+            cardEl.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
+            cardEl.style.backgroundSize = 'cover';
+            cardEl.style.backgroundPosition = 'center';
+            cardEl.style.border = '2px solid #e50914';
+            
+            nameEl.innerHTML = `
+                <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-shadow:2px 2px 4px rgba(0,0,0,0.8);">${item.team}</div>
+                <div style="font-size:14px; color:#fff; margin-top:5px;">By: ${item.uploader}</div>
+                <div style="font-size:12px; color:#aaa; margin-top:3px; font-style:italic;">"${item.title.substring(0, 30)}..."</div>
+            `;
+        } else if(cardEl && nameEl) {
+            nameEl.innerHTML = `<span style="color:#888; font-size:14px;">Not Set by Admin Yet</span>`;
+        }
+    });
 }
 
 // Open modal popup when user taps any award card
