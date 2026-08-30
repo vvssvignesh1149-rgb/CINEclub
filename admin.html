@@ -8,16 +8,16 @@
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
+    <!-- Secret Pin Lock -->
     <div id="adminLoginBox" class="auth-card">
         <h3>Security Verification</h3>
         <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
         <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
 
+    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
-        <button onclick="loadUserTable()" class="primary-btn">View All Registered Users</button>
-        <button onclick="loadTeamsRoster()" class="primary-btn" style="background:#222; border:1px solid #444; margin-left:10px;">Teams List & Members</button>
-
+        <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
         <div style="margin-top: 30px;" id="adminDataDisplay"></div>
     </div>
 
@@ -37,47 +37,57 @@
 
         function loadUserTable() {
             let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-            let html = `<h3>All Registered Users Data</h3>
+            let html = `<h3>Registered Users & Team Management</h3>
                         <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; background:#181818; color:#fff;">
-                            <tr style="background:#e50914;"><th style="padding:10px;">Name</th><th>Roll No</th><th>Branch</th><th>Year</th><th>Assigned Team</th></tr>`;
+                            <tr style="background:#e50914;">
+                                <th style="padding:10px;">Name</th>
+                                <th>Roll No</th>
+                                <th>Branch</th>
+                                <th>Year</th>
+                                <th>Assigned Team</th>
+                                <th>Action</th>
+                            </tr>`;
             
             if(users.length === 0) {
-                html += `<tr><td colspan="5" style="text-align:center; padding:15px;">No users registered yet.</td></tr>`;
+                html += `<tr><td colspan="6" style="text-align:center; padding:15px;">No users registered yet.</td></tr>`;
             } else {
                 users.forEach(u => {
-                    html += `<tr><td style="padding:8px;">${u.name}</td><td>${u.roll}</td><td>${u.branch}</td><td>${u.year}</td><td>${u.team || 'None'}</td></tr>`;
+                    html += `<tr>
+                        <td style="padding:8px;">${u.name}</td>
+                        <td>${u.roll}</td>
+                        <td>${u.branch}</td>
+                        <td>${u.year}</td>
+                        <td>${u.team || 'None'}</td>
+                        <td style="padding:8px; text-align:center;">
+                            ${u.team ? `<button onclick="adminRemoveTeam('${u.roll}')" style="background:#d9534f; color:#white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Remove from Team</button>` : 'No Team'}
+                        </td>
+                    </tr>`;
                 });
             }
             html += `</table>`;
             document.getElementById('adminDataDisplay').innerHTML = html;
         }
 
-        function loadTeamsRoster() {
+        // Admin can remove user from their team
+        function adminRemoveTeam(rollNo) {
             let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
-            const teams = [
-                "Frame Smashers", "Lens Legends", "Cut & Create", "Pixel Pirates", 
-                "Directors Cut", "Focus Phantoms", "Motion Mavericks", "Visual Voyagers", 
-                "Shutter Squad", "Cine Titans"
-            ];
-
-            let html = `<h3>Teams Roster List</h3>`;
-            teams.forEach(t => {
-                let members = users.filter(u => u.team === t);
-                html += `<div style="background:#161616; border:1px solid #333; padding:15px; margin-top:10px; border-radius:5px;">
-                            <h4 style="color:#e50914;">${t} (${members.length} Members)</h4>`;
-                if(members.length === 0) {
-                    html += `<p style="color:#888; font-size:14px;">No members joined yet.</p>`;
-                } else {
-                    html += `<ul>`;
-                    members.forEach(m => {
-                        html += `<li>${m.name} - ${m.branch} (${m.year} Year) [Roll: ${m.roll}]</li>`;
-                    });
-                    html += `</ul>`;
+            users = users.map(u => {
+                if(u.roll === rollNo) {
+                    u.team = null;
                 }
-                html += `</div>`;
+                return u;
             });
+            localStorage.setItem('cinenet_users', JSON.stringify(users));
 
-            document.getElementById('adminDataDisplay').innerHTML = html;
+            // If current logged-in user matches, update their session too
+            let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
+            if(currentUser && currentUser.roll === rollNo) {
+                currentUser.team = null;
+                localStorage.setItem('cinenet_current_user', JSON.stringify(currentUser));
+            }
+
+            alert('User successfully removed from the team by Admin!');
+            loadUserTable();
         }
     </script>
 </body>

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Navigation Bar -->
     <header>
         <div class="logo">CINENET</div>
         <nav>
@@ -18,6 +19,7 @@
         </nav>
     </header>
 
+    <!-- User Authentication Section -->
     <section id="auth" class="main-section container" style="display:none;">
         <div class="auth-card">
             <div class="tab-triggers">
@@ -28,7 +30,7 @@
             <form id="signupForm" onsubmit="handleSignup(event)">
                 <h3>Student Sign Up</h3>
                 <input type="text" id="suName" placeholder="Full Name" required>
-                <input type="text" id="suRoll" placeholder="Roll No (Will be used as Password)" required>
+                <input type="text" id="suRoll" placeholder="Roll No (Will be Password)" required>
                 <input type="text" id="suBranch" placeholder="Branch" required>
                 <input type="text" id="suYear" placeholder="Year" required>
                 <button type="submit" class="primary-btn">Register</button>
@@ -43,87 +45,80 @@
         </div>
     </section>
 
+    <!-- Home Page -->
     <section id="home" class="main-section container">
         <div class="best-month-banner">
             <h2>🏆 Teams Best of the Month</h2>
-            <div class="banner-box">Featured Cinematic Masterpiece of the Month</div>
+            <div class="banner-box">Featured Cinematic Masterpiece</div>
         </div>
-
         <div class="content-block">
             <h3>Short Films</h3>
             <div class="grid-layout">
                 <div class="card">
                     <div class="video-placeholder">15 Seconds Video Teaser</div>
-                    <p class="url-text">YouTube URL: <a href="https://youtube.com/shorts/sample1" target="_blank">Watch Here</a></p>
+                    <p class="url-text">YouTube URL: <a href="#" target="_blank">Watch Here</a></p>
                     <span class="team-tag">Team: Frame Smashers</span>
-                </div>
-                <div class="card">
-                    <div class="video-placeholder">15 Seconds Video Teaser</div>
-                    <p class="url-text">YouTube URL: <a href="https://youtube.com/shorts/sample2" target="_blank">Watch Here</a></p>
-                    <span class="team-tag">Team: Lens Legends</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="content-block">
-            <h3>Photographs</h3>
-            <div class="grid-layout">
-                <div class="photo-card">
-                    <div class="photo-placeholder">🖼️ Photo Frame</div>
-                    <p>Photographer: Rahul<br><small>Team: Pixel Pirates</small></p>
-                </div>
-                <div class="photo-card">
-                    <div class="photo-placeholder">🖼️ Photo Frame</div>
-                    <p>Photographer: Ananya<br><small>Team: Focus Phantoms</small></p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Edits Page -->
     <section id="edits" class="main-section container" style="display:none;">
         <h2>Edits Showcase</h2>
         <div class="grid-layout">
             <div class="card">
                 <div class="video-placeholder">Dynamic Edit Preview</div>
-                <p class="url-text">YouTube URL: <a href="https://youtube.com/watch?v=edit1" target="_blank">Watch Edit</a></p>
                 <span class="team-tag">Team: Cut & Create</span>
-            </div>
-            <div class="card">
-                <div class="video-placeholder">VFX Montage Preview</div>
-                <p class="url-text">YouTube URL: <a href="https://youtube.com/watch?v=edit2" target="_blank">Watch Edit</a></p>
-                <span class="team-tag">Team: Directors Cut</span>
             </div>
         </div>
     </section>
 
+    <!-- Teams Page & Team Specific Interface -->
     <section id="teams-page" class="main-section container" style="display:none;">
-        <div class="join-club-container">
-            <h2>Join the Club & Choose Your Team</h2>
-            <p>Select your team from the 10 inbuilt options below. You can switch or exit teams anytime!</p>
-            
-            <div class="user-current-status" id="userStatusBox" style="display:none;">
-                <p>Current Team: <span id="myAssignedTeam">None</span></p>
-                <button onclick="exitTeam()" class="danger-btn">Exit Current Team</button>
-            </div>
-        </div>
+        <h2>Explore Teams</h2>
+        <p>Tap on any team to view their works, members, and join options.</p>
+        
+        <div class="user-status-banner" id="userTeamStatusMsg" style="margin-bottom:20px; color:#ffcc00; font-weight:bold;"></div>
 
-        <h3>Available Teams (10 Inbuilt Options)</h3>
+        <!-- 10 Inbuilt Team Buttons -->
         <div class="teams-grid">
-            <button class="team-btn" onclick="joinTeam('Frame Smashers')">Frame Smashers</button>
-            <button class="team-btn" onclick="joinTeam('Lens Legends')">Lens Legends</button>
-            <button class="team-btn" onclick="joinTeam('Cut & Create')">Cut & Create</button>
-            <button class="team-btn" onclick="joinTeam('Pixel Pirates')">Pixel Pirates</button>
-            <button class="team-btn" onclick="joinTeam('Directors Cut')">Directors Cut</button>
-            <button class="team-btn" onclick="joinTeam('Focus Phantoms')">Focus Phantoms</button>
-            <button class="team-btn" onclick="joinTeam('Motion Mavericks')">Motion Mavericks</button>
-            <button class="team-btn" onclick="joinTeam('Visual Voyagers')">Visual Voyagers</button>
-            <button class="team-btn" onclick="joinTeam('Shutter Squad')">Shutter Squad</button>
-            <button class="team-btn" onclick="joinTeam('Cine Titans')">Cine Titans</button>
+            <button class="team-btn" onclick="openTeamInterface('Frame Smashers')">Frame Smashers</button>
+            <button class="team-btn" onclick="openTeamInterface('Lens Legends')">Lens Legends</button>
+            <button class="team-btn" onclick="openTeamInterface('Cut & Create')">Cut & Create</button>
+            <button class="team-btn" onclick="openTeamInterface('Pixel Pirates')">Pixel Pirates</button>
+            <button class="team-btn" onclick="openTeamInterface('Directors Cut')">Directors Cut</button>
+            <button class="team-btn" onclick="openTeamInterface('Focus Phantoms')">Focus Phantoms</button>
+            <button class="team-btn" onclick="openTeamInterface('Motion Mavericks')">Motion Mavericks</button>
+            <button class="team-btn" onclick="openTeamInterface('Visual Voyagers')">Visual Voyagers</button>
+            <button class="team-btn" onclick="openTeamInterface('Shutter Squad')">Shutter Squad</button>
+            <button class="team-btn" onclick="openTeamInterface('Cine Titans')">Cine Titans</button>
         </div>
 
-        <div id="teamDetailView" style="margin-top: 30px; display:none;">
-            <h3 id="selectedTeamTitle">Team Members</h3>
-            <div id="teamMemberList" class="member-list-box"></div>
+        <!-- Team Specific Detailed Interface (Appears on clicking a team) -->
+        <div id="teamInterfaceView" style="margin-top: 40px; display:none; border-top: 2px solid #333; padding-top: 20px;">
+            <h2 id="activeTeamTitle" style="color:#e50914;"></h2>
+            
+            <div id="joinActionContainer" style="margin: 15px 0;">
+                <!-- Join Button dynamically controlled -->
+            </div>
+
+            <!-- Team Work Section (Reference to Home) -->
+            <div class="content-block" style="background:#141414; padding:20px; border-radius:6px;">
+                <h3><span id="displayTeamNameForWork"></span> Works & Showreel</h3>
+                <div class="grid-layout">
+                    <div class="card">
+                        <div class="video-placeholder">Team Short Film / Teaser</div>
+                        <span class="team-tag" id="workTeamTag">Team Work</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members List of this Team -->
+            <div class="content-block">
+                <h3>Team Roster Members</h3>
+                <div id="activeTeamMemberList" class="member-list-box" style="background:#181818; padding:15px; border-radius:5px;"></div>
+            </div>
         </div>
     </section>
 
