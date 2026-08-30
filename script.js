@@ -32,7 +32,9 @@ function loadHomeFeed() {
     shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
         shortFilms.map(item => `
             <div class="card" style="background:#1f1f1f;">
-                <video width="100%" height="140" controls style="border-radius:4px;"><source src="${item.fileData}" type="video/mp4"></video>
+                <div class="video-placeholder" style="background:#000; height:140px; display:flex; align-items:center; justify-content:center;">
+                    <a href="${item.fileData}" target="_blank" style="color:#e50914; font-weight:bold; text-decoration:none;">▶ Watch Short Film (YouTube)</a>
+                </div>
                 <h4 style="margin-top:10px;">${item.title}</h4>
                 <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
             </div>
@@ -41,7 +43,9 @@ function loadHomeFeed() {
     editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
         edits.map(item => `
             <div class="card" style="background:#1f1f1f;">
-                <video width="100%" height="140" controls style="border-radius:4px;"><source src="${item.fileData}" type="video/mp4"></video>
+                <div class="video-placeholder" style="background:#000; height:140px; display:flex; align-items:center; justify-content:center;">
+                    <a href="${item.fileData}" target="_blank" style="color:#e50914; font-weight:bold; text-decoration:none;">▶ Watch Edit (YouTube)</a>
+                </div>
                 <h4 style="margin-top:10px;">${item.title}</h4>
                 <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
             </div>
@@ -67,7 +71,9 @@ function loadDedicatedEdits() {
     grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
         edits.map(item => `
             <div class="card" style="background:#1f1f1f;">
-                <video width="100%" height="150" controls style="border-radius:4px;"><source src="${item.fileData}" type="video/mp4"></video>
+                <div class="video-placeholder" style="background:#000; height:150px; display:flex; align-items:center; justify-content:center;">
+                    <a href="${item.fileData}" target="_blank" style="color:#e50914; font-weight:bold; text-decoration:none;">▶ Watch Edit (YouTube)</a>
+                </div>
                 <h4 style="margin-top:10px;">${item.title}</h4>
                 <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
             </div>
@@ -174,7 +180,7 @@ function openTeamInterface(teamName) {
                 <h4 style="margin-top:10px;">${item.title}</h4>
                 ${item.type === 'Photograph' ? 
                     `<img src="${item.fileData}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
-                    `<video width="100%" height="130" controls style="border-radius:4px; margin-top:8px;"><source src="${item.fileData}" type="video/mp4"></video>`
+                    `<div style="background:#000; height:100px; display:flex; align-items:center; justify-content:center; margin-top:8px; border-radius:4px;"><a href="${item.fileData}" target="_blank" style="color:#e50914; font-weight:bold; text-decoration:none;">▶ Watch Video</a></div>`
                 }
                 <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
             </div>
@@ -225,19 +231,20 @@ function loadMyTeamWorkspace() {
     container.innerHTML = `
         <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
             <h3 style="color:#e50914;">${teamName} Workspace</h3>
-            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs (Max 20s for videos):</p>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films / Edits (via YouTube Link) or Photographs (via Image File):</p>
             
             <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                 <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <option value="Short Film">Short Film (Video)</option>
-                        <option value="Edit">Edit (Video)</option>
-                        <option value="Photograph">Photograph (Image)</option>
+                    <select id="mediaType" onchange="toggleUploadInput()" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <option value="Short Film">Short Film (YouTube Link)</option>
+                        <option value="Edit">Edit (YouTube Link)</option>
+                        <option value="Photograph">Photograph (Image File)</option>
                     </select>
                     <input type="text" id="mediaTitle" placeholder="Title / Description" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                    <input type="file" id="mediaFile" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
-                    <button type="button" onclick="handleVideoUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
+                    <input type="text" id="mediaUrl" placeholder="Paste YouTube URL here (e.g. https://youtu.be/...)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                    <input type="file" id="mediaFile" accept="image/*" style="display:none; background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                 </div>
             </div>
 
@@ -251,7 +258,7 @@ function loadMyTeamWorkspace() {
                                 <h4 style="margin-top:10px;">${item.title}</h4>
                                 ${item.type === 'Photograph' ? 
                                     `<img src="${item.fileData}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
-                                    `<video width="100%" height="120" controls style="border-radius:4px; margin-top:5px;"><source src="${item.fileData}" type="video/mp4"></video>`
+                                    `<div style="background:#000; height:100px; display:flex; align-items:center; justify-content:center; margin-top:5px; border-radius:4px;"><a href="${item.fileData}" target="_blank" style="color:#e50914; font-weight:bold; text-decoration:none;">▶ Watch Video</a></div>`
                                 }
                                 <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
                             </div>
@@ -262,68 +269,58 @@ function loadMyTeamWorkspace() {
     `;
 }
 
-// Fixed robust upload function with 20s validation for WhatsApp/Local videos
-function handleVideoUpload(teamName) {
-    let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
+function toggleUploadInput() {
     let type = document.getElementById('mediaType').value;
-    let title = document.getElementById('mediaTitle').value;
+    let urlInput = document.getElementById('mediaUrl');
     let fileInput = document.getElementById('mediaFile');
 
-    if(!title.trim()) {
-        alert('Please enter a title or description!');
-        return;
-    }
-    if(fileInput.files.length === 0) {
-        alert('Please select a file to upload!');
-        return;
-    }
-
-    let file = fileInput.files[0];
-
-    // If it's a video, check duration to be <= 20 seconds
-    if(type === 'Short Film' || type === 'Edit') {
-        let videoElem = document.createElement('video');
-        let objectUrl = URL.createObjectURL(file);
-        videoElem.src = objectUrl;
-
-        videoElem.onloadedmetadata = function() {
-            URL.revokeObjectURL(objectUrl);
-            if(videoElem.duration > 21) {
-                alert(`Video duration is ${Math.round(videoElem.duration)} seconds! Please select a video of 20 seconds or less.`);
-                return;
-            }
-            proceedFileReader(file, teamName, type, title, currentUser.name);
-        };
-
-        // Fallback if metadata fails to load instantly
-        setTimeout(() => {
-            if(!videoElem.duration) {
-                proceedFileReader(file, teamName, type, title, currentUser.name);
-            }
-        }, 1000);
+    if(type === 'Photograph') {
+        urlInput.style.display = 'none';
+        fileInput.style.display = 'block';
     } else {
-        // Photograph
-        proceedFileReader(file, teamName, type, title, currentUser.name);
+        urlInput.style.display = 'block';
+        fileInput.style.display = 'none';
     }
 }
 
-function proceedFileReader(file, teamName, type, title, uploaderName) {
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
-        allContent.push({
-            team: teamName,
-            type: type,
-            title: title,
-            fileData: e.target.result,
-            uploader: uploaderName
-        });
-        localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+function processUpload(teamName) {
+    let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
+    let type = document.getElementById('mediaType').value;
+    let title = document.getElementById('mediaTitle').value;
+    
+    if(!title.trim()) {
+        alert('Please enter a title!');
+        return;
+    }
 
-        alert('Successfully uploaded and published to Home Page feed!');
-        loadMyTeamWorkspace();
-    };
-    reader.readAsDataURL(file);
+    if(type === 'Photograph') {
+        let fileInput = document.getElementById('mediaFile');
+        if(fileInput.files.length === 0) {
+            alert('Please select an image file!');
+            return;
+        }
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            saveToStorage(teamName, type, title, e.target.result, currentUser.name);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        let urlInput = document.getElementById('mediaUrl').value;
+        if(!urlInput.trim()) {
+            alert('Please paste a YouTube URL!');
+            return;
+        }
+        saveToStorage(teamName, type, title, urlInput, currentUser.name);
+    }
+}
+
+function saveToStorage(team, type, title, fileData, uploader) {
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    allContent.push({ team, type, title, fileData, uploader });
+    localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
+
+    alert('Successfully uploaded and published to Home Page feed!');
+    loadMyTeamWorkspace();
 }
 
 window.onload = function() {
