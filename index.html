@@ -7,62 +7,99 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Navigation Bar -->
     <header>
         <div class="logo">CINENET</div>
         <nav>
-            <a href="#home">Home</a>
-            <a href="#teams">Teams</a>
-            <a href="#films">Short Films</a>
-            <a href="#join">Join Club</a>
-            <a href="admin.html" class="admin-link">Admin Panel</a>
+            <a href="#auth">Login / Signup</a>
+            <a href="#home">Home Page</a>
+            <a href="admin.html">Admin Panel</a>
         </nav>
     </header>
 
-    <section id="home" class="hero">
-        <h1>Welcome to CINENET</h1>
-        <p>Cinematography Club - Frame Smashers, Lens Legends & More</p>
-    </section>
+    <!-- Auth Section (Login & Signup as per your wireframe) -->
+    <section id="auth" class="container">
+        <div class="auth-box">
+            <div class="tab-btns">
+                <button onclick="switchTab('signup')" id="tabSignup" class="active-btn">Sign Up</button>
+                <button onclick="switchTab('login')" id="tabLogin">Login</button>
+            </div>
 
-    <section id="teams" class="container">
-        <h2>Our 10 Dynamic Teams</h2>
-        <div class="team-grid">
-            <div class="team-card" onclick="openTeam('Frame Smashers')">Frame Smashers</div>
-            <div class="team-card" onclick="openTeam('Lens Legends')">Lens Legends</div>
-            <div class="team-card" onclick="openTeam('Cut & Create')">Cut & Create</div>
-            <div class="team-card" onclick="openTeam('Pixel Pirates')">Pixel Pirates</div>
-            <div class="team-card" onclick="openTeam('Directors Cut')">Directors Cut</div>
-            <div class="team-card" onclick="openTeam('Focus Phantoms')">Focus Phantoms</div>
+            <!-- Signup Form -->
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <h3>Student Sign Up</h3>
+                <input type="text" id="sName" placeholder="Name" required>
+                <input type="text" id="sRoll" placeholder="Roll No (Will be Password)" required>
+                <input type="text" id="sBranch" placeholder="Branch" required>
+                <input type="text" id="sYear" placeholder="Year" required>
+                <button type="submit">Register & Sign Up</button>
+            </form>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" style="display:none;">
+                <h3>Student Login</h3>
+                <input type="text" id="lName" placeholder="Username (Name)" required>
+                <input type="password" id="lRoll" placeholder="Password (Roll No)" required>
+                <button type="submit">Login to Interface</button>
+            </form>
         </div>
     </section>
 
-    <section id="films" class="container">
-        <h2>Short Films & Work</h2>
-        <div class="film-card">
-            <iframe width="100%" height="200" src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="YouTube video" allowfullscreen></iframe>
-            <h3>Team Name: Frame Smashers</h3>
-            <p>15 Seconds Teaser / Full Short Film</p>
-        </div>
+    <!-- Home Page Interface (Scroll Down) -->
+    <section id="home" class="container" style="display:none;">
+        <h2>Welcome to CINENET Interface</h2>
+        <p>Scroll down to explore Teams, Short Films, and Photographs!</p>
     </section>
 
-    <section id="join" class="container">
-        <h2>Join the Club</h2>
-        <form id="joinForm">
-            <input type="text" id="name" placeholder="Full Name" required>
-            <input type="text" id="rollno" placeholder="Roll Number (Password)" required>
-            <input type="text" id="branch" placeholder="Branch" required>
-            <input type="text" id="year" placeholder="Year" required>
-            <select id="teamSelect">
-                <option value="Frame Smashers">Frame Smashers</option>
-                <option value="Lens Legends">Lens Legends</option>
-                <option value="Cut & Create">Cut & Create</option>
-                <option value="Pixel Pirates">Pixel Pirates</option>
-                <option value="Directors Cut">Directors Cut</option>
-                <option value="Focus Phantoms">Focus Phantoms</option>
-            </select>
-            <button type="submit">Join Team</button>
-        </form>
-    </section>
+    <script>
+        function switchTab(tab) {
+            if(tab === 'signup') {
+                document.getElementById('signupForm').style.display = 'flex';
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('tabSignup').classList.add('active-btn');
+                document.getElementById('tabLogin').classList.remove('active-btn');
+            } else {
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'flex';
+                document.getElementById('tabLogin').classList.add('active-btn');
+                document.getElementById('tabSignup').classList.remove('active-btn');
+            }
+        }
 
-    <script src="script.js"></script>
+        function handleSignup(e) {
+            e.preventDefault();
+            const user = {
+                name: document.getElementById('sName').value,
+                roll: document.getElementById('sRoll').value,
+                branch: document.getElementById('sBranch').value,
+                year: document.getElementById('sYear').value
+            };
+            
+            // Saving data locally to simulate backend / admin storage
+            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+            users.push(user);
+            localStorage.setItem('cinenet_users', JSON.stringify(users));
+            
+            alert('Sign Up Successful! Now you can Login.');
+            switchTab('login');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const name = document.getElementById('lName').value;
+            const roll = document.getElementById('lRoll').value;
+
+            let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
+            let validUser = users.find(u => u.name === name && u.roll === roll);
+
+            if(validUser) {
+                alert('Login Successful! Welcome to CINENET.');
+                document.getElementById('auth').style.display = 'none';
+                document.getElementById('home').style.display = 'block';
+            } else {
+                alert('Invalid Credentials or Please Sign Up First!');
+            }
+        }
+    </script>
 </body>
 </html>
