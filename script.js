@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://gwchrmdszjqymathbocgz.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UKkAUrIEyg_GroYQL7C';
+const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
 
 let photographs = [];
 let shortFilms = [];
