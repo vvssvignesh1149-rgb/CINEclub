@@ -18,6 +18,17 @@ dbRequest.onupgradeneeded = function(event) {
     }
 };
 
+// Helper function to auto-detect and convert URLs/Insta handles into clickable links
+function formatDescriptionWithLinks(text) {
+    if (!text) return '';
+    // Match http/https links or standard URLs
+    let urlRegex = /(https?:\/\/[^\s]+)/g;
+    let formatted = text.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
+    });
+    return formatted;
+}
+
 function showSection(sectionId) {
     document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -62,7 +73,7 @@ function loadHomeFeed() {
                         <source src="${item.fileData}" type="video/mp4">
                         Your browser does not support video playback.
                     </video>
-                    <h4 style="margin-top:10px;">${item.title}</h4>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
                 </div>
             `).join('');
@@ -74,7 +85,7 @@ function loadHomeFeed() {
                         <source src="${item.fileData}" type="video/mp4">
                         Your browser does not support video playback.
                     </video>
-                    <h4 style="margin-top:10px;">${item.title}</h4>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
                 </div>
             `).join('');
@@ -83,7 +94,7 @@ function loadHomeFeed() {
             photographs.map(item => `
                 <div class="card" style="background:#1f1f1f;">
                     <img src="${item.fileData}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
-                    <h4 style="margin-top:10px;">${item.title}</h4>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
                 </div>
             `).join('');
@@ -110,7 +121,7 @@ function loadDedicatedEdits() {
                         <source src="${item.fileData}" type="video/mp4">
                         Your browser does not support video playback.
                     </video>
-                    <h4 style="margin-top:10px;">${item.title}</h4>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
                 </div>
             `).join('');
@@ -220,7 +231,7 @@ function openTeamInterface(teamName) {
             teamContent.map(item => `
                 <div class="card" style="background:#1f1f1f;">
                     <span class="team-tag">${item.type}</span>
-                    <h4 style="margin-top:10px;">${item.title}</h4>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                     ${item.type === 'Photograph' ? 
                         `<img src="${item.fileData}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
                         `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
@@ -282,7 +293,7 @@ function loadMyTeamWorkspace() {
         container.innerHTML = `
             <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
                 <h3 style="color:#e50914;">${teamName} Workspace</h3>
-                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
+                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs (You can include YouTube/Instagram links in the title description):</p>
                 
                 <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
                     <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
@@ -292,7 +303,7 @@ function loadMyTeamWorkspace() {
                             <option value="Edit">Edit (Video)</option>
                             <option value="Photograph">Photograph (Image)</option>
                         </select>
-                        <input type="text" id="mediaTitle" placeholder="Title / Description" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <input type="text" id="mediaTitle" placeholder="Title / Description (e.g. My edit https://youtu.be/...)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
                         <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
                         <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                     </div>
@@ -305,7 +316,7 @@ function loadMyTeamWorkspace() {
                             teamContent.map(item => `
                                 <div class="card" style="background:#1f1f1f;">
                                     <span class="team-tag">${item.type}</span>
-                                    <h4 style="margin-top:10px;">${item.title}</h4>
+                                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
                                     ${item.type === 'Photograph' ? 
                                         `<img src="${item.fileData}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
                                         `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
@@ -368,9 +379,8 @@ function processUpload(teamName) {
     reader.readAsDataURL(file);
 }
 
-// Edit Title/Description function
 function editMediaTitle(id, currentTitle) {
-    let newTitle = prompt("Enter new title / description:", currentTitle);
+    let newTitle = prompt("Enter new title / description (You can add links):", currentTitle);
     if(newTitle === null || !newTitle.trim()) return;
 
     let transaction = db.transaction(["mediaStore"], "readwrite");
@@ -392,7 +402,6 @@ function editMediaTitle(id, currentTitle) {
     };
 }
 
-// Delete media item function
 function deleteMedia(id) {
     if(!confirm("Are you sure you want to delete this upload?")) return;
 
