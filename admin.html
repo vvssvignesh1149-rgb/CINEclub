@@ -120,18 +120,18 @@
             let request = store.getAll();
 
             request.onsuccess = function() {
-                let allContent = request.result || [];
+                window.allMediaCache = request.result || []; // Cache items globally for safe retrieval
                 let filteredItems = [];
 
                 let titleText = "";
                 if(category === 'filmmaker') {
-                    filteredItems = allContent.filter(c => c.type === 'Short Film');
+                    filteredItems = window.allMediaCache.filter(c => c.type === 'Short Film');
                     titleText = "Choose Best Filmmaker (Short Films)";
                 } else if(category === 'photographer') {
-                    filteredItems = allContent.filter(c => c.type === 'Photograph');
+                    filteredItems = window.allMediaCache.filter(c => c.type === 'Photograph');
                     titleText = "Choose Best Photographer (Photographs)";
                 } else if(category === 'editor') {
-                    filteredItems = allContent.filter(c => c.type === 'Edit');
+                    filteredItems = window.allMediaCache.filter(c => c.type === 'Edit');
                     titleText = "Choose Best Editor (Edits)";
                 }
 
@@ -144,12 +144,12 @@
                     html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
                     filteredItems.forEach(item => {
                         html += `
-                            <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <h4 style="color:#ffcc00;">${item.title}</h4>
+                            <div style="background:#181818; border:1px solid #333; padding:15px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:200px; word-break:break-all;">
+                                    <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
                                     <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: ${item.team}</p>
                                 </div>
-                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer;">Set Winner</button>
+                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap;">Set Winner</button>
                             </div>
                         `;
                     });
@@ -160,26 +160,19 @@
         }
 
         function setAwardWinner(category, mediaId) {
-            if (!db) {
-                alert("Database not ready.");
+            if (!window.allMediaCache) {
+                alert("Please reload the category manager.");
                 return;
             }
-            let transaction = db.transaction(["mediaStore"], "readonly");
-            let store = transaction.objectStore("mediaStore");
-            let request = store.get(Number(mediaId));
-
-            request.onsuccess = function() {
-                let selectedMedia = request.result;
-                if(selectedMedia) {
-                    localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                    alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.toUpperCase()}.`);
-                } else {
-                    alert('Error: Record not found in database.');
-                }
-            };
-            request.onerror = function() {
-                alert('Database read error.');
-            };
+            // Directly find from cached array to completely bypass ID transaction lookup bugs
+            let selectedMedia = window.allMediaCache.find(item => Number(item.id) === Number(mediaId));
+            
+            if (selectedMedia) {
+                localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
+                alert(`Successfully updated! ${selectedMedia.uploader} (${selectedMedia.team}) is set as Best ${category.toUpperCase()}.`);
+            } else {
+                alert('Error: Record matching ID not found.');
+            }
         }
     </script>
 </body>
