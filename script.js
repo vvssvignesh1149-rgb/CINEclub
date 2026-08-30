@@ -1,7 +1,7 @@
 // 🔥 SUPABASE CONFIGURATION
-const SUPABASE_URL = 'https://gwchrmdszjqymgbocgz.supabase.co';
+const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
-
+                           
 let supabaseClient = null;
 try {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -36,35 +36,6 @@ function formatDescriptionWithLinks(text) {
     return text.replace(urlRegex, function(url) {
         return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
     });
-}
-
-// 🌐 ENTIRE WEBSITE GLOBAL LOGOUT & USER STATE CHECK
-function checkGlobalNavbarAuth() {
-    let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
-    
-    // Website lo login/signup buttons unna nav container ni select chestham (or custom element id: 'globalAuthNav')
-    let navAuthContainer = document.getElementById('globalAuthNav');
-    if(!navAuthContainer) return;
-
-    if(currentUser) {
-        // User login ayi unte: Name + Logout button chupisthundi
-        navAuthContainer.innerHTML = `
-            <span style="color:#ffcc00; font-size:14px; margin-right:10px;">👤 ${currentUser.name}</span>
-            <button onclick="globalWebsiteLogout()" style="background:#dc3545; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">Logout</button>
-        `;
-    } else {
-        // Login avvakapothe: Login/Signup option chupisthundi
-        navAuthContainer.innerHTML = `
-            <button onclick="showSection('auth')" style="background:#e50914; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">Login / Sign Up</button>
-        `;
-    }
-}
-
-function globalWebsiteLogout() {
-    localStorage.removeItem('cinenet_current_user');
-    alert('🔒 Logged out successfully from CINENET!');
-    checkGlobalNavbarAuth();
-    showSection('home');
 }
 
 // Load 3 Award Winners onto Home Page Team Cards
@@ -295,7 +266,6 @@ async function handleLogin(e) {
     if(user) {
         localStorage.setItem('cinenet_current_user', JSON.stringify(user));
         alert('🎉 Login Successful!');
-        checkGlobalNavbarAuth();
         showSection('home');
     } else {
         alert('❌ Invalid Credentials or Account not found.');
@@ -403,6 +373,7 @@ async function loadMyTeamWorkspace() {
 
     if(!container) return;
 
+    // FEATURE 3: Evaru login avvakapothe upload option block chesi login button chupisthundi
     if(!currentUser) {
         container.innerHTML = `
             <div style="background:#1a1a1a; border:1px dashed #e50914; padding:30px; text-align:center; border-radius:8px; margin-top:20px;">
@@ -465,6 +436,7 @@ async function loadMyTeamWorkspace() {
     `;
 }
 
+// 🔥 Supabase Cloud Storage File Upload & DB Insert
 async function processCloudUpload(teamName) {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     if(!currentUser) {
@@ -539,11 +511,12 @@ async function deleteCloudMedia(id) {
     loadHomeFeed();
 }
 
-// 🔥 REAL-TIME WINNERS SYNC ACROSS ALL DEVICES
+// 🔥 REAL-TIME WINNERS SYNC ACROSS ALL DEVICES (Mobile & Laptop)
 async function fetchAndDisplayWinners() {
     let { data: winnersList, error } = await supabaseClient.from('winners').select('*');
     if(error || !winnersList) return;
 
+    // First clear existing displays
     ['filmmaker', 'photographer', 'editor'].forEach(cat => {
         let div = document.getElementById(`display-winner-${cat}`);
         if(div) div.innerHTML = `<p style="color:#888; font-size:13px;">Not Set by Admin Yet</p>`;
@@ -563,6 +536,7 @@ async function fetchAndDisplayWinners() {
     });
 }
 
+// Realtime Listener using Supabase WebSockets
 if(supabaseClient) {
     supabaseClient
       .channel('public:winners')
@@ -575,7 +549,6 @@ if(supabaseClient) {
 
 // Page load initialization
 window.addEventListener('DOMContentLoaded', () => {
-    checkGlobalNavbarAuth();
     fetchAndDisplayWinners();
     loadHomeFeed();
 });
