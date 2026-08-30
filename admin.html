@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CINENET - Admin Panel</title>
+    <title>CINENET - Admin Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="container">
     <h2>CINENET Admin Portal</h2>
 
+    <!-- Secret Pin Lock -->
     <div id="adminLoginBox" class="auth-card">
         <h3>Security Verification</h3>
         <input type="password" id="adminSecretPin" placeholder="Enter Secret PIN">
         <button onclick="verifyAdmin()" class="primary-btn" style="margin-top: 10px;">Unlock Panel</button>
     </div>
 
+    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="loadUserTable()" class="primary-btn">Manage Users & Teams</button>
@@ -27,8 +29,6 @@
     <script>
         const SECRET_PIN = "CINEMA2026";
         let db;
-        window.allMediaCache = [];
-
         const dbRequest = indexedDB.open("CinenetMediaDB", 1);
 
         dbRequest.onerror = function(event) {
@@ -37,7 +37,6 @@
 
         dbRequest.onsuccess = function(event) {
             db = event.target.result;
-            fetchAllMedia();
         };
 
         dbRequest.onupgradeneeded = function(event) {
@@ -47,23 +46,12 @@
             }
         };
 
-        function fetchAllMedia() {
-            if (!db) return;
-            let transaction = db.transaction(["mediaStore"], "readonly");
-            let store = transaction.objectStore("mediaStore");
-            let request = store.getAll();
-            request.onsuccess = function() {
-                window.allMediaCache = request.result || [];
-            };
-        }
-
         function verifyAdmin() {
             const entered = document.getElementById('adminSecretPin').value;
             if(entered === SECRET_PIN) {
                 document.getElementById('adminLoginBox').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
                 loadUserTable();
-                fetchAllMedia();
             } else {
                 alert('Incorrect Secret PIN!');
             }
@@ -123,9 +111,16 @@
         }
 
         function loadAwardManager(category) {
-            fetchAllMedia();
-            setTimeout(() => {
-                let allContent = window.allMediaCache || [];
+            if (!db) {
+                alert("Database is opening, please click again in a second!");
+                return;
+            }
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.getAll();
+
+            request.onsuccess = function() {
+                let allContent = request.result || [];
                 let filteredItems = [];
 
                 let titleText = "";
@@ -154,26 +149,38 @@
                                     <h4 style="color:#ffcc00; margin-bottom:5px;">${item.title}</h4>
                                     <p style="font-size:13px; color:#aaa;">By: ${item.uploader} | Team: <strong>${item.team}</strong></p>
                                 </div>
-                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap;">Set Winner</button>
+                                <button type="button" onclick="setAwardWinner('${category}', ${item.id})" class="primary-btn" style="background:#28a745; cursor:pointer; white-space:nowrap; padding:12px 20px; font-size:15px;">Set Winner</button>
                             </div>
                         `;
                     });
                     html += `</div>`;
                 }
                 document.getElementById('adminDataDisplay').innerHTML = html;
-            }, 300);
+            };
         }
 
+        // Direct fetch from database on button click to eliminate any lookup error
         function setAwardWinner(category, mediaId) {
-            let allContent = window.allMediaCache || [];
-            let selectedMedia = allContent.find(item => Number(item.id) === Number(mediaId));
-            
-            if (selectedMedia) {
-                localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
-                alert(`Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
-            } else {
-                alert('Error: Record matching ID not found.');
+            if (!db) {
+                alert("Database not ready.");
+                return;
             }
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.get(Number(mediaId));
+
+            request.onsuccess = function() {
+                let selectedMedia = request.result;
+                if(selectedMedia) {
+                    localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
+                    alert(`✅ Winner Set Successfully!\nTeam: ${selectedMedia.team}\nWinner: ${selectedMedia.uploader}\nCategory: Best ${category.toUpperCase()}`);
+                } else {
+                    alert('Error: Record ID not found in database.');
+                }
+            };
+            request.onerror = function() {
+                alert('Database transaction failed.');
+            };
         }
     </script>
 </body>
