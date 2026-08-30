@@ -1,5 +1,5 @@
 // 🔥 SUPABASE CONFIGURATION
-const SUPABASE_URL = 'https://gwchrmdszjqymgbocgz.supabase.co';
+const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
 
 let supabaseClient = null;
