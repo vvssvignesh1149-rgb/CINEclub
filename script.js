@@ -1,31 +1,3 @@
-let db;
-const dbRequest = indexedDB.open("CinenetMediaDB", 1);
-
-dbRequest.onerror = function(event) {
-    console.error("IndexedDB error: " + event.target.errorCode);
-};
-
-dbRequest.onsuccess = function(event) {
-    db = event.target.result;
-    loadHomeFeed();
-    loadAwardsBanners();
-};
-
-dbRequest.onupgradeneeded = function(event) {
-    db = event.target.result;
-    if (!db.objectStoreNames.contains("mediaStore")) {
-        db.createObjectStore("mediaStore", { keyPath: "id", autoIncrement: true });
-    }
-};
-
-function formatDescriptionWithLinks(text) {
-    if (!text) return '';
-    let urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlRegex, function(url) {
-        return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
-    });
-}
-
 function showSection(sectionId) {
     document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -45,7 +17,15 @@ function showSection(sectionId) {
     }
 }
 
-// Load 3 Award Winners onto Cinematic Team Cards on Home Page
+function formatDescriptionWithLinks(text) {
+    if (!text) return '';
+    let urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" style="color:#e50914; text-decoration:underline; font-weight:bold;">${url}</a>`;
+    });
+}
+
+// Load 3 Award Winners onto Home Page Team Cards
 function loadAwardsBanners() {
     let categories = ['filmmaker', 'photographer', 'editor'];
 
@@ -55,7 +35,6 @@ function loadAwardsBanners() {
         let nameEl = document.getElementById(`bestName_${cat}`);
 
         if (item && cardEl && nameEl) {
-            // Set team card background image styling dynamically
             cardEl.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80')`;
             cardEl.style.backgroundSize = 'cover';
             cardEl.style.backgroundPosition = 'center';
@@ -72,7 +51,6 @@ function loadAwardsBanners() {
     });
 }
 
-// Open modal popup when user taps any award card
 function openAwardOutput(category) {
     let item = JSON.parse(localStorage.getItem(`cinenet_best_${category}`));
     let modalContainer = document.getElementById('modalContentContainer');
@@ -108,81 +86,67 @@ function closeModal() {
 }
 
 function loadHomeFeed() {
-    if (!db) return;
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
+    let shortFilmsGrid = document.getElementById('homeShortFilmsGrid');
+    let editsGrid = document.getElementById('homeEditsGrid');
+    let photosGrid = document.getElementById('homePhotosGrid');
 
-        let shortFilmsGrid = document.getElementById('homeShortFilmsGrid');
-        let editsGrid = document.getElementById('homeEditsGrid');
-        let photosGrid = document.getElementById('homePhotosGrid');
+    if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
 
-        if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
+    let shortFilms = allContent.filter(c => c.type === 'Short Film');
+    let edits = allContent.filter(c => c.type === 'Edit');
+    let photographs = allContent.filter(c => c.type === 'Photograph');
 
-        let shortFilms = allContent.filter(c => c.type === 'Short Film');
-        let edits = allContent.filter(c => c.type === 'Edit');
-        let photographs = allContent.filter(c => c.type === 'Photograph');
+    shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
+        shortFilms.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.fileData}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
-        shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
-            shortFilms.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
+    editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
+        edits.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.fileData}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
-        editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
-            edits.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="150" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
-
-        photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
-            photographs.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <img src="${item.fileData}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
-                </div>
-            `).join('');
-    };
+    photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
+        photographs.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <img src="${item.fileData}" alt="Photograph" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Photographer: ${item.uploader} | Team: ${item.team}</p>
+            </div>
+        `).join('');
 }
 
 function loadDedicatedEdits() {
-    if (!db) return;
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    let edits = allContent.filter(c => c.type === 'Edit');
+    let grid = document.getElementById('dedicatedEditsGrid');
 
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let edits = allContent.filter(c => c.type === 'Edit');
-        let grid = document.getElementById('dedicatedEditsGrid');
+    if(!grid) return;
 
-        if(!grid) return;
-
-        grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
-            edits.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <video width="100%" height="160" controls preload="metadata" style="border-radius:4px; background:#000;">
-                        <source src="${item.fileData}" type="video/mp4">
-                    </video>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
-                </div>
-            `).join('');
-    };
+    grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
+        edits.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <video width="100%" height="160" controls preload="metadata" style="border-radius:4px; background:#000;">
+                    <source src="${item.fileData}" type="video/mp4">
+                </video>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+            </div>
+        `).join('');
 }
 
 function switchAuth(tab) {
@@ -274,29 +238,22 @@ function openTeamInterface(teamName) {
         joinContainer.innerHTML = `<button onclick="confirmJoinTeam('${teamName}')" class="primary-btn" style="background:#28a745;">Join This Team</button>`;
     }
 
-    if (!db) return;
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
-
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let teamContent = allContent.filter(c => c.team === teamName);
-        let workGrid = document.getElementById('teamWorkGrid');
-        
-        workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
-            teamContent.map(item => `
-                <div class="card" style="background:#1f1f1f;">
-                    <span class="team-tag">${item.type}</span>
-                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    ${item.type === 'Photograph' ? 
-                        `<img src="${item.fileData}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
-                        `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
-                    }
-                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-                </div>
-            `).join('');
-    };
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    let teamContent = allContent.filter(c => c.team === teamName);
+    let workGrid = document.getElementById('teamWorkGrid');
+    
+    workGrid.innerHTML = teamContent.length === 0 ? '<p style="color:#888;">No uploads by this team yet.</p>' :
+        teamContent.map(item => `
+            <div class="card" style="background:#1f1f1f;">
+                <span class="team-tag">${item.type}</span>
+                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                ${item.type === 'Photograph' ? 
+                    `<img src="${item.fileData}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
+                    `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
+                }
+                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+            </div>
+        `).join('');
 
     let users = JSON.parse(localStorage.getItem('cinenet_users')) || [];
     let teamMembers = users.filter(u => u.team === teamName);
@@ -337,59 +294,51 @@ function loadMyTeamWorkspace() {
     }
 
     let teamName = currentUser.team;
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    let teamContent = allContent.filter(c => c.team === teamName);
 
-    if (!db) return;
-    let transaction = db.transaction(["mediaStore"], "readonly");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.getAll();
-
-    request.onsuccess = function() {
-        let allContent = request.result || [];
-        let teamContent = allContent.filter(c => c.team === teamName);
-
-        container.innerHTML = `
-            <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
-                <h3 style="color:#e50914;">${teamName} Workspace</h3>
-                <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
-                
-                <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
-                    <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                            <option value="Short Film">Short Film (Video)</option>
-                            <option value="Edit">Edit (Video)</option>
-                            <option value="Photograph">Photograph (Image)</option>
-                        </select>
-                        <input type="text" id="mediaTitle" placeholder="Title / Description (with links if any)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
-                        <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
-                        <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
-                    </div>
-                </div>
-
-                <div style="margin-top:30px;">
-                    <h4>Your Team's Uploads</h4>
-                    <div class="grid-layout" style="margin-top:15px;">
-                        ${teamContent.length === 0 ? '<p style="color:#888;">No uploads yet.</p>' : 
-                            teamContent.map(item => `
-                                <div class="card" style="background:#1f1f1f;">
-                                    <span class="team-tag">${item.type}</span>
-                                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                                    ${item.type === 'Photograph' ? 
-                                        `<img src="${item.fileData}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
-                                        `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
-                                    }
-                                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
-                                    <div style="display:flex; gap:10px; margin-top:10px;">
-                                        <button onclick="editMediaTitle(${item.id}, '${item.title.replace(/'/g, "\\'")}')" style="background:#f0ad4e; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Edit Title</button>
-                                        <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                    </div>
+    container.innerHTML = `
+        <div style="background:#161616; padding:20px; border-radius:8px; border:1px solid #333;">
+            <h3 style="color:#e50914;">${teamName} Workspace</h3>
+            <p style="color:#ccc; margin-bottom:15px;">Upload Short Films, Edits, or Photographs:</p>
+            
+            <div style="background:#1f1f1f; padding:20px; border-radius:6px; margin-top:20px;">
+                <h4 style="margin-bottom:10px; color:#ffcc00;">Upload Content</h4>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <select id="mediaType" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                        <option value="Short Film">Short Film (Video)</option>
+                        <option value="Edit">Edit (Video)</option>
+                        <option value="Photograph">Photograph (Image)</option>
+                    </select>
+                    <input type="text" id="mediaTitle" placeholder="Title / Description (with links if any)" style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
+                    <input type="file" id="mediaFile" accept="video/*,image/*" style="background:#222; padding:10px; border:1px solid #444; color:#fff;">
+                    <button type="button" onclick="processUpload('${teamName}')" class="primary-btn" style="background:#28a745; cursor:pointer; font-weight:bold; padding:12px;">Upload to Home Feed</button>
                 </div>
             </div>
-        `;
-    };
+
+            <div style="margin-top:30px;">
+                <h4>Your Team's Uploads</h4>
+                <div class="grid-layout" style="margin-top:15px;">
+                    ${teamContent.length === 0 ? '<p style="color:#888;">No uploads yet.</p>' : 
+                        teamContent.map(item => `
+                            <div class="card" style="background:#1f1f1f;">
+                                <span class="team-tag">${item.type}</span>
+                                <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                                ${item.type === 'Photograph' ? 
+                                    `<img src="${item.fileData}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
+                                    `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.fileData}" type="video/mp4"></video>`
+                                }
+                                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                                <div style="display:flex; gap:10px; margin-top:10px;">
+                                    <button onclick="editMediaTitle(${item.id})" style="background:#f0ad4e; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Edit Title</button>
+                                    <button onclick="deleteMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function processUpload(teamName) {
@@ -411,7 +360,9 @@ function processUpload(teamName) {
     let reader = new FileReader();
 
     reader.onload = function(e) {
+        let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
         let newItem = {
+            id: Date.now(), // unique ID
             team: teamName,
             type: type,
             title: title,
@@ -419,61 +370,46 @@ function processUpload(teamName) {
             uploader: currentUser.name
         };
 
-        let transaction = db.transaction(["mediaStore"], "readwrite");
-        let store = transaction.objectStore("mediaStore");
-        let request = store.add(newItem);
+        allContent.push(newItem);
+        localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
-        request.onsuccess = function() {
-            alert('Successfully uploaded and stored permanently!');
-            loadMyTeamWorkspace();
-            loadHomeFeed();
-        };
-
-        request.onerror = function() {
-            alert('Failed to save video into database.');
-        };
+        alert('Successfully uploaded and published permanently!');
+        loadMyTeamWorkspace();
+        loadHomeFeed();
     };
 
     reader.readAsDataURL(file);
 }
 
-function editMediaTitle(id, currentTitle) {
-    let newTitle = prompt("Enter new title / description:", currentTitle);
+function editMediaTitle(id) {
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    let item = allContent.find(c => c.id === id);
+    if(!item) return;
+
+    let newTitle = prompt("Enter new title / description:", item.title);
     if(newTitle === null || !newTitle.trim()) return;
 
-    let transaction = db.transaction(["mediaStore"], "readwrite");
-    let store = transaction.objectStore("mediaStore");
-    let getRequest = store.get(id);
+    item.title = newTitle.trim();
+    localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
-    getRequest.onsuccess = function() {
-        let data = getRequest.result;
-        if(data) {
-            data.title = newTitle.trim();
-            let updateRequest = store.put(data);
-
-            updateRequest.onsuccess = function() {
-                alert('Title updated successfully!');
-                loadMyTeamWorkspace();
-                loadHomeFeed();
-            };
-        }
-    };
+    alert('Title updated successfully!');
+    loadMyTeamWorkspace();
+    loadHomeFeed();
 }
 
 function deleteMedia(id) {
     if(!confirm("Are you sure you want to delete this upload?")) return;
 
-    let transaction = db.transaction(["mediaStore"], "readwrite");
-    let store = transaction.objectStore("mediaStore");
-    let request = store.delete(id);
+    let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
+    allContent = allContent.filter(c => c.id !== id);
+    localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
-    request.onsuccess = function() {
-        alert('Upload deleted successfully!');
-        loadMyTeamWorkspace();
-        loadHomeFeed();
-    };
-
-    request.onerror = function() {
-        alert('Failed to delete upload.');
-    };
+    alert('Upload deleted successfully!');
+    loadMyTeamWorkspace();
+    loadHomeFeed();
 }
+
+window.onload = function() {
+    loadHomeFeed();
+    loadAwardsBanners();
+};
