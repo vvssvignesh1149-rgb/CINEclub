@@ -232,8 +232,8 @@ function loadMyTeamWorkspace() {
                 <form onsubmit="handleMediaUpload(event, '${teamName}')" style="display:flex; flex-direction:column; gap:10px;">
                     <select id="mediaType" required style="padding:10px; background:#222; color:#fff; border:1px solid #444;">
                         <option value="">Select Type</option>
-                        <option value="Short Film">Short Film (Video <= 20s)</option>
-                        <option value="Edit">Edit (Video <= 20s)</option>
+                        <option value="Short Film">Short Film (Video)</option>
+                        <option value="Edit">Edit (Video)</option>
                         <option value="Photograph">Photograph (Image)</option>
                     </select>
                     <input type="text" id="mediaTitle" placeholder="Title / Description" required>
@@ -273,31 +273,11 @@ function handleMediaUpload(event, teamName) {
 
     if (!file) return;
 
-    if (type === 'Photograph') {
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            saveContent(teamName, type, title, e.target.result, currentUser.name);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        let videoElement = document.createElement('video');
-        let fileURL = URL.createObjectURL(file);
-        videoElement.src = fileURL;
-
-        videoElement.onloadedmetadata = function() {
-            window.URL.revokeObjectURL(videoElement.src);
-            if (videoElement.duration > 20.5) {
-                alert(`Video duration is ${Math.round(videoElement.duration)} seconds! Please upload a video of 20 seconds or less.`);
-                return;
-            }
-
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                saveContent(teamName, type, title, e.target.result, currentUser.name);
-            };
-            reader.readAsDataURL(file);
-        };
-    }
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        saveContent(teamName, type, title, e.target.result, currentUser.name);
+    };
+    reader.readAsDataURL(file);
 }
 
 function saveContent(team, type, title, fileData, uploader) {
@@ -306,6 +286,10 @@ function saveContent(team, type, title, fileData, uploader) {
     localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
     alert('Successfully uploaded and published to Home Page feed!');
-    loadHomeFeed(); // Immediately update feed
-    showSection('home'); // Redirect to home to check
+    loadHomeFeed();
+    showSection('home');
 }
+
+window.onload = function() {
+    loadHomeFeed();
+};
