@@ -16,7 +16,6 @@ function showSection(sectionId) {
     }
 }
 
-// Load dynamic feeds onto Home Page
 function loadHomeFeed() {
     let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
 
@@ -24,11 +23,12 @@ function loadHomeFeed() {
     let editsGrid = document.getElementById('homeEditsGrid');
     let photosGrid = document.getElementById('homePhotosGrid');
 
+    if(!shortFilmsGrid || !editsGrid || !photosGrid) return;
+
     let shortFilms = allContent.filter(c => c.type === 'Short Film');
     let edits = allContent.filter(c => c.type === 'Edit');
     let photographs = allContent.filter(c => c.type === 'Photograph');
 
-    // Render Short Films
     shortFilmsGrid.innerHTML = shortFilms.length === 0 ? '<p style="color:#888;">No short films uploaded yet.</p>' :
         shortFilms.map(item => `
             <div class="card" style="background:#1f1f1f;">
@@ -38,7 +38,6 @@ function loadHomeFeed() {
             </div>
         `).join('');
 
-    // Render Edits on Home
     editsGrid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits uploaded yet.</p>' :
         edits.map(item => `
             <div class="card" style="background:#1f1f1f;">
@@ -48,7 +47,6 @@ function loadHomeFeed() {
             </div>
         `).join('');
 
-    // Render Photographs on Home
     photosGrid.innerHTML = photographs.length === 0 ? '<p style="color:#888;">No photographs uploaded yet.</p>' :
         photographs.map(item => `
             <div class="card" style="background:#1f1f1f;">
@@ -63,6 +61,8 @@ function loadDedicatedEdits() {
     let allContent = JSON.parse(localStorage.getItem('cinenet_team_content')) || [];
     let edits = allContent.filter(c => c.type === 'Edit');
     let grid = document.getElementById('dedicatedEditsGrid');
+
+    if(!grid) return;
 
     grid.innerHTML = edits.length === 0 ? '<p style="color:#888;">No edits showcase available.</p>' :
         edits.map(item => `
@@ -130,6 +130,8 @@ function handleLogin(e) {
 function updateUserStatusDisplay() {
     let currentUser = JSON.parse(localStorage.getItem('cinenet_current_user'));
     let msgBox = document.getElementById('userTeamStatusMsg');
+    if(!msgBox) return;
+
     if(!currentUser) {
         msgBox.innerHTML = "⚠️ Please <a href='#' onclick=\"showSection('auth')\" style='color:#e50914;'>Login</a> to join a team.";
         return;
@@ -278,7 +280,6 @@ function handleMediaUpload(event, teamName) {
         };
         reader.readAsDataURL(file);
     } else {
-        // Video validation (Max 20 seconds)
         let videoElement = document.createElement('video');
         let fileURL = URL.createObjectURL(file);
         videoElement.src = fileURL;
@@ -305,10 +306,6 @@ function saveContent(team, type, title, fileData, uploader) {
     localStorage.setItem('cinenet_team_content', JSON.stringify(allContent));
 
     alert('Successfully uploaded and published to Home Page feed!');
-    loadMyTeamWorkspace();
+    loadHomeFeed(); // Immediately update feed
+    showSection('home'); // Redirect to home to check
 }
-
-// Initial load on page start
-window.onload = function() {
-    loadHomeFeed();
-};

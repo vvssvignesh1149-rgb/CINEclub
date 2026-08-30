@@ -46,39 +46,30 @@
         </div>
     </section>
 
-    <!-- Home Page (Dynamic Feed for Short Films, Edits, and Photographs) -->
+    <!-- Home Page -->
     <section id="home" class="main-section container">
         <div class="best-month-banner">
             <h2>🏆 Teams Best of the Month</h2>
             <div class="banner-box">Featured Cinematic Masterpiece</div>
         </div>
 
-        <!-- Short Films Section -->
         <div class="content-block">
             <h3>🎬 Short Films</h3>
-            <div class="grid-layout" id="homeShortFilmsGrid">
-                <!-- Dynamically loaded from uploaded team videos -->
-            </div>
+            <div class="grid-layout" id="homeShortFilmsGrid"></div>
         </div>
 
-        <!-- Edits Section -->
         <div class="content-block">
             <h3>✂️ Edits</h3>
-            <div class="grid-layout" id="homeEditsGrid">
-                <!-- Dynamically loaded from uploaded edits -->
-            </div>
+            <div class="grid-layout" id="homeEditsGrid"></div>
         </div>
 
-        <!-- Photographs Section -->
         <div class="content-block">
             <h3>📸 Photographies</h3>
-            <div class="grid-layout" id="homePhotosGrid">
-                <!-- Dynamically loaded from uploaded photos -->
-            </div>
+            <div class="grid-layout" id="homePhotosGrid"></div>
         </div>
     </section>
 
-    <!-- Dedicated Edits Page -->
+    <!-- Edits Page -->
     <section id="edits" class="main-section container" style="display:none;">
         <h2>Edits Showcase</h2>
         <div class="grid-layout" id="dedicatedEditsGrid"></div>
@@ -90,14 +81,12 @@
         <div id="myTeamContainer"></div>
     </section>
 
-    <!-- Teams Page & Team Specific Interface -->
+    <!-- Teams Page -->
     <section id="teams-page" class="main-section container" style="display:none;">
         <h2>Explore Teams</h2>
         <p>Tap on any team to view their works, members, and join options.</p>
-        
         <div class="user-status-banner" id="userTeamStatusMsg" style="margin:15px 0; color:#ffcc00; font-weight:bold;"></div>
 
-        <!-- 10 Inbuilt Team Buttons -->
         <div class="teams-grid">
             <button class="team-btn" onclick="openTeamInterface('Frame Smashers')">Frame Smashers</button>
             <button class="team-btn" onclick="openTeamInterface('Lens Legends')">Lens Legends</button>
@@ -111,19 +100,15 @@
             <button class="team-btn" onclick="openTeamInterface('Cine Titans')">Cine Titans</button>
         </div>
 
-        <!-- Team Specific Detailed Interface -->
         <div id="teamInterfaceView" style="margin-top: 40px; display:none; border-top: 2px solid #333; padding-top: 20px;">
             <h2 id="activeTeamTitle" style="color:#e50914;"></h2>
-            
             <div id="joinActionContainer" style="margin: 15px 0;"></div>
-
-            <!-- Team Work Section -->
+            
             <div class="content-block" style="background:#141414; padding:20px; border-radius:6px;">
                 <h3><span id="displayTeamNameForWork"></span> Works & Showreel</h3>
                 <div class="grid-layout" id="teamWorkGrid"></div>
             </div>
 
-            <!-- Members List of this Team -->
             <div class="content-block">
                 <h3>Team Roster Members</h3>
                 <div id="activeTeamMemberList" class="member-list-box" style="background:#181818; padding:15px; border-radius:5px;"></div>
@@ -132,5 +117,11 @@
     </section>
 
     <script src="script.js"></script>
+    <script>
+        // Ensure home feed loads immediately when page opens
+        window.onload = function() {
+            loadHomeFeed();
+        };
+    </script>
 </body>
 </html>
