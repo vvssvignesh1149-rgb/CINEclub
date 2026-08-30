@@ -29,6 +29,8 @@
     <script>
         const SECRET_PIN = "CINEMA2026";
         let db;
+        window.allMediaCache = [];
+
         const dbRequest = indexedDB.open("CinenetMediaDB", 1);
 
         dbRequest.onerror = function(event) {
@@ -37,6 +39,7 @@
 
         dbRequest.onsuccess = function(event) {
             db = event.target.result;
+            fetchAllMedia();
         };
 
         dbRequest.onupgradeneeded = function(event) {
@@ -46,12 +49,23 @@
             }
         };
 
+        function fetchAllMedia() {
+            if (!db) return;
+            let transaction = db.transaction(["mediaStore"], "readonly");
+            let store = transaction.objectStore("mediaStore");
+            let request = store.getAll();
+            request.onsuccess = function() {
+                window.allMediaCache = request.result || [];
+            };
+        }
+
         function verifyAdmin() {
             const entered = document.getElementById('adminSecretPin').value;
             if(entered === SECRET_PIN) {
                 document.getElementById('adminLoginBox').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
                 loadUserTable();
+                fetchAllMedia();
             } else {
                 alert('Incorrect Secret PIN!');
             }
@@ -111,27 +125,20 @@
         }
 
         function loadAwardManager(category) {
-            if (!db) {
-                alert("Database loading... Please try again.");
-                return;
-            }
-            let transaction = db.transaction(["mediaStore"], "readonly");
-            let store = transaction.objectStore("mediaStore");
-            let request = store.getAll();
-
-            request.onsuccess = function() {
-                window.allMediaCache = request.result || []; // Cache items globally for safe retrieval
+            fetchAllMedia();
+            setTimeout(() => {
+                let allContent = window.allMediaCache || [];
                 let filteredItems = [];
 
                 let titleText = "";
                 if(category === 'filmmaker') {
-                    filteredItems = window.allMediaCache.filter(c => c.type === 'Short Film');
+                    filteredItems = allContent.filter(c => c.type === 'Short Film');
                     titleText = "Choose Best Filmmaker (Short Films)";
                 } else if(category === 'photographer') {
-                    filteredItems = window.allMediaCache.filter(c => c.type === 'Photograph');
+                    filteredItems = allContent.filter(c => c.type === 'Photograph');
                     titleText = "Choose Best Photographer (Photographs)";
                 } else if(category === 'editor') {
-                    filteredItems = window.allMediaCache.filter(c => c.type === 'Edit');
+                    filteredItems = allContent.filter(c => c.type === 'Edit');
                     titleText = "Choose Best Editor (Edits)";
                 }
 
@@ -156,16 +163,12 @@
                     html += `</div>`;
                 }
                 document.getElementById('adminDataDisplay').innerHTML = html;
-            };
+            }, 300);
         }
 
         function setAwardWinner(category, mediaId) {
-            if (!window.allMediaCache) {
-                alert("Please reload the category manager.");
-                return;
-            }
-            // Directly find from cached array to completely bypass ID transaction lookup bugs
-            let selectedMedia = window.allMediaCache.find(item => Number(item.id) === Number(mediaId));
+            let allContent = window.allMediaCache || [];
+            let selectedMedia = allContent.find(item => Number(item.id) === Number(mediaId));
             
             if (selectedMedia) {
                 localStorage.setItem(`cinenet_best_${category}`, JSON.stringify(selectedMedia));
