@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://gwchrmdszjqymbgbocgz.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYqL7C';
+const SUPABASE_ANON_KEY = 'sb_publishable_ONhm4PIE3qg0UXkAUrIEyg_GroYQL7C';
 
 let photographs = [];
 let shortFilms = [];
@@ -85,7 +85,7 @@ function globalWebsiteLogout() {
     showSection('home');
 }
 
-// 🔥 RENDER PHOTOGRAPHS SAFELY
+// 🔥 RENDER PHOTOGRAPHS SAFELY WITH CLICKABLE UPLOADER
 function renderPhotographsGrid() {
     let photosGrid = document.getElementById('homePhotosGrid');
     if(photosGrid) {
@@ -94,7 +94,7 @@ function renderPhotographsGrid() {
                 <div class="card" style="background:#13151f; padding:12px; text-align:center;">
                     <img src="${item.file_url}" alt="Photograph" class="gallery-photo-item" data-url="${item.file_url}" data-title="${item.title ? item.title.replace(/"/g, '&quot;') : 'Photograph Masterpiece'}" style="width:100%; max-height:350px; object-fit:contain; background:#090a0f; border-radius:8px; display:block; cursor:pointer;" title="Click to view full image">
                     <h4 style="margin-top:12px; font-size:15px; color:#fff; text-align:left;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#94a3b8; margin-top:4px; text-align:left;">Photographer: ${item.uploader} | Team: ${item.team}</p>
+                    <p style="font-size:13px; color:#94a3b8; margin-top:4px; text-align:left;">Photographer: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span> | Team: ${item.team}</p>
                 </div>
             `).join('');
     }
@@ -129,7 +129,7 @@ async function loadAwardsBanners() {
 
             nameEl.innerHTML = `
                 <div style="font-size:18px; font-weight:bold; color:#ffcc00; text-transform:uppercase; letter-spacing:1px;">${matchedWinner.team}</div>
-                <div style="font-size:14px; color:#ffffff; font-weight:600; margin-top:4px;">Winner: ${matchedWinner.uploader}</div>
+                <div style="font-size:14px; color:#ffffff; font-weight:600; margin-top:4px;">Winner: <span onclick="event.stopPropagation(); openUserProfile('${matchedWinner.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline;">${matchedWinner.uploader}</span></div>
                 <div style="font-size:12px; color:#cccccc; margin-top:2px; font-style:italic;">"${cleanTitle.substring(0, 25)}..."</div>
             `;
         } else if(nameEl) {
@@ -224,7 +224,7 @@ async function openAwardOutput(category) {
             <div style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
                 <img src="${fileSrc}" style="max-width:95%; max-height:60vh; object-fit:contain; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
                 <h4 style="margin-top:12px; color:#fff; font-size:16px;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Photographer: ${winnerRecord.uploader}</p>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Photographer: <span onclick="openUserProfile('${winnerRecord.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${winnerRecord.uploader}</span></p>
             </div>
         `;
     } else {
@@ -235,7 +235,7 @@ async function openAwardOutput(category) {
                     Your browser does not support video playback.
                 </video>
                 <h4 style="margin-top:12px; color:#fff; font-size:16px;">${formatDescriptionWithLinks(winnerRecord.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Maker: ${winnerRecord.uploader}</p>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${winnerRecord.team} | Maker: <span onclick="openUserProfile('${winnerRecord.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${winnerRecord.uploader}</span></p>
             </div>
         `;
     }
@@ -243,6 +243,7 @@ async function openAwardOutput(category) {
     let modal = document.getElementById('awardModal');
     if(modal) modal.style.display = 'flex';
 }
+
 async function loadHomeFeed() {
     let allContent = [];
     let res = await safeQuery(client => client.from('mediaStore').select('*'));
@@ -278,7 +279,7 @@ async function loadHomeFeed() {
                         <source src="${item.file_url}" type="video/mp4">
                     </video>
                     <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span></p>
                 </div>
             `).join('');
     }
@@ -291,7 +292,7 @@ async function loadHomeFeed() {
                         <source src="${item.file_url}" type="video/mp4">
                     </video>
                     <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+                    <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span></p>
                 </div>
             `).join('');
     }
@@ -316,7 +317,7 @@ async function loadDedicatedEdits() {
                     <source src="${item.file_url}" type="video/mp4">
                 </video>
                 <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
-                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: ${item.uploader}</p>
+                <p style="font-size:13px; color:#aaa; margin-top:4px;">Team: ${item.team} | By: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span></p>
             </div>
         `).join('');
 }
@@ -453,7 +454,7 @@ async function openTeamInterface(teamName) {
                         `<img src="${item.file_url}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-top:8px;">` : 
                         `<video width="100%" height="130" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
                     }
-                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                    <p style="font-size:12px; color:#aaa; margin-top:5px;">By: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span></p>
                 </div>
             `).join('');
     }
@@ -465,7 +466,7 @@ async function openTeamInterface(teamName) {
 
     if(memberListEl) {
         memberListEl.innerHTML = teamMembers.length === 0 ? '<p style="color:#888;">No members in this team yet.</p>' :
-            teamMembers.map(m => `<div style="padding: 6px 0; border-bottom: 1px solid #222;"><strong>${m.name}</strong> - ${m.branch} (${m.year} Year)</div>`).join('');
+            teamMembers.map(m => `<div style="padding: 6px 0; border-bottom: 1px solid #222;"><strong onclick="openUserProfile('${m.name}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline;">${m.name}</strong> - ${m.branch} (${m.year} Year)</div>`).join('');
     }
 }
 
@@ -545,7 +546,7 @@ async function loadMyTeamWorkspace() {
                                     `<img src="${item.file_url}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-top:5px;">` : 
                                     `<video width="100%" height="120" controls preload="metadata" style="border-radius:4px; margin-top:5px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
                                 }
-                                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: ${item.uploader}</p>
+                                <p style="font-size:12px; color:#aaa; margin-top:5px;">By: <span onclick="openUserProfile('${item.uploader}')" style="color:#ffcc00; cursor:pointer; text-decoration:underline; font-weight:bold;">${item.uploader}</span></p>
                                 <div style="display:flex; gap:10px; margin-top:10px;">
                                     <button onclick="deleteCloudMedia(${item.id})" style="background:#d9534f; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Delete</button>
                                 </div>
@@ -666,7 +667,7 @@ function filterHomeContent(type) {
         if(pBlock) pBlock.style.display = 'block';
     } else if(type === 'films') {
         if(fBlock) fBlock.style.display = 'block';
-        if(eBlock) eBlock.style.display = 'none';
+        if(eBlock) fBlock.style.display = 'none';
         if(pBlock) pBlock.style.display = 'none';
     } else if(type === 'edits') {
         if(fBlock) fBlock.style.display = 'none';
@@ -676,5 +677,43 @@ function filterHomeContent(type) {
         if(fBlock) fBlock.style.display = 'none';
         if(eBlock) eBlock.style.display = 'none';
         if(pBlock) pBlock.style.display = 'block';
+    }
+}
+
+async function openUserProfile(uploaderName) {
+    showSection('portfolio-page');
+    
+    let nameEl = document.getElementById('portfolioUserName');
+    let metaEl = document.getElementById('portfolioUserMeta');
+    let gridEl = document.getElementById('portfolioContentGrid');
+    
+    if(nameEl) nameEl.innerText = `${uploaderName}'s Portfolio`;
+    if(metaEl) metaEl.innerText = `Exclusive showcase of works uploaded by ${uploaderName}`;
+    
+    let res = await safeQuery(client => client.from('mediaStore').select('*'));
+    let allContent = res.data || [];
+    let userWorks = allContent.filter(c => c.uploader && c.uploader.toLowerCase() === uploaderName.toLowerCase());
+    
+    // Also fetch user branch/year if available from cinenet_users
+    let resUsers = await safeQuery(client => client.from('cinenet_users').select('*'));
+    let usersList = resUsers.data || [];
+    let userInfo = usersList.find(u => u.name.toLowerCase() === uploaderName.toLowerCase());
+    if(userInfo && metaEl) {
+        metaEl.innerText = `Branch: ${userInfo.branch} | Year: ${userInfo.year} | Team: ${userInfo.team || 'None'} | Roll: ${userInfo.roll}`;
+    }
+
+    if(gridEl) {
+        gridEl.innerHTML = userWorks.length === 0 ? '<p style="color:#888;">No works uploaded by this user yet.</p>' :
+            userWorks.map(item => `
+                <div class="card" style="background:#1f1f1f;">
+                    <span class="team-tag">${item.type}</span>
+                    <h4 style="margin-top:10px;">${formatDescriptionWithLinks(item.title)}</h4>
+                    ${item.type === 'Photograph' ? 
+                        `<img src="${item.file_url}" class="gallery-photo-item" data-url="${item.file_url}" data-title="${item.title ? item.title.replace(/"/g, '&quot;') : 'Masterpiece'}" style="width:100%; height:150px; object-fit:cover; border-radius:4px; margin-top:8px; cursor:pointer;" title="Click to view full image">` : 
+                        `<video width="100%" height="150" controls preload="metadata" style="border-radius:4px; margin-top:8px; background:#000;"><source src="${item.file_url}" type="video/mp4"></video>`
+                    }
+                    <p style="font-size:12px; color:#aaa; margin-top:5px;">Team: ${item.team}</p>
+                </div>
+            `).join('');
     }
 }
