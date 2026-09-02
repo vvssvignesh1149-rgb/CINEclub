@@ -19,7 +19,7 @@
             <a href="#" onclick="showSection('home')">Home</a>
             <a href="#" onclick="showSection('teams-page')">Teams</a>
             <a href="#" onclick="showSection('edits')">Edits</a>
-            <a href="#" onclick="showSection('my-team')">My Team</a>
+            <a href="#" onclick="showSection('portfolio-page');">My Profile</a>
             <span id="globalAuthNav">
                 <a href="#" onclick="showSection('auth')" style="background:#ffcc00; color:#090a0f; padding:6px 12px; border-radius:4px; font-weight:bold;">Login / Sign Up</a>
             </span>
@@ -52,7 +52,7 @@
         </div>
     </section>
 
-<!-- Home Page -->
+    <!-- Home Page -->
     <section id="home" class="main-section container">
         <h2 style="text-align:center; margin-bottom:20px;">🏆 Teams Best of the Month</h2>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
@@ -95,22 +95,16 @@
     </section>
 
     <!-- Modal Popup for Awards Output -->
-   <div id="awardModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5, 6, 10, 0.95); z-index:9999; justify-content:center; align-items:center; flex-direction:column; padding:20px;">
-    <button onclick="closeModal()" style="position:absolute; top:25px; right:35px; background:#ffcc00; color:#090a0f; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:800; font-size:14px; z-index:10000;">✕ CLOSE</button>
-    <h3 id="modalTitle" style="color:#ffcc00; margin-bottom:15px; font-size:20px; text-align:center;">Photograph Masterpiece</h3>
-    <div id="modalContentContainer" style="width:100%; height:80vh; display:flex; justify-content:center; align-items:center;"></div>
-</div>
+    <div id="awardModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5, 6, 10, 0.95); z-index:9999; justify-content:center; align-items:center; flex-direction:column; padding:20px;">
+        <button onclick="closeModal()" style="position:absolute; top:25px; right:35px; background:#ffcc00; color:#090a0f; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:800; font-size:14px; z-index:10000;">✕ CLOSE</button>
+        <h3 id="modalTitle" style="color:#ffcc00; margin-bottom:15px; font-size:20px; text-align:center;">Photograph Masterpiece</h3>
+        <div id="modalContentContainer" style="width:100%; height:80vh; display:flex; justify-content:center; align-items:center;"></div>
+    </div>
 
     <!-- Edits Page -->
     <section id="edits" class="main-section container" style="display:none;">
         <h2>Edits Showcase</h2>
         <div class="grid-layout" id="dedicatedEditsGrid"></div>
-    </section>
-
-    <!-- My Team Workspace Page -->
-    <section id="my-team" class="main-section container" style="display:none;">
-        <h2>My Team Workspace</h2>
-        <div id="myTeamContainer"></div>
     </section>
 
     <!-- Teams Page -->
@@ -148,6 +142,19 @@
         </div>
     </section>
 
+    <!-- User Portfolio Profile Page (My Profile & Upload Hub) -->
+    <section id="portfolio-page" class="main-section container" style="display:none; padding: 40px 20px;">
+        <div style="background: rgba(16, 18, 27, 0.75); padding:25px; border-radius:14px; border:1px solid rgba(255,204,0,0.15); margin-bottom:25px; text-align:center;">
+            <h2 id="portfolioUserName" style="font-family:'Space Grotesk',sans-serif; color:#ffcc00; font-size:28px; margin-bottom:8px;"></h2>
+            <p id="portfolioUserMeta" style="color:#94a3b8; font-size:14px; line-height: 1.6;"></p>
+        </div>
+        
+        <div id="portfolioContainerWrapper"></div>
+
+        <h3 style="color:#fff; font-size:20px; margin-bottom:20px; border-left:4px solid #ffcc00; padding-left:10px; font-family:'Space Grotesk',sans-serif;">Uploaded Masterpieces</h3>
+        <div class="grid-layout" id="portfolioContentGrid"></div>
+    </section>
+
     <script src="script.js"></script>
     <script>
         let logoTapCount = 0;
@@ -172,16 +179,6 @@
         window.onload = function() {
             showSection('home');
         };
-        <!-- User Portfolio Profile Page -->
-<section id="portfolio-page" class="main-section container" style="display:none;">
-    <div style="background:#161616; padding:25px; border-radius:8px; border:1px solid #333; margin-bottom:20px; text-align:center;">
-        <h2 id="portfolioUserName" style="color:#ffcc00; font-size:24px; margin-bottom:5px;"></h2>
-        <p id="portfolioUserMeta" style="color:#aaa; font-size:14px;"></p>
-    </div>
-    <h3 style="color:#fff; margin-bottom:15px;">Uploaded Masterpieces</h3>
-    <div class="grid-layout" id="portfolioContentGrid"></div>
-</section>
-
     </script>
 </body>
 </html>
