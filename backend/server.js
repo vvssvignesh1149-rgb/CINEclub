@@ -9,10 +9,13 @@ app.use(cors());
 
 // Nodemailer transporter setup for cinenetclub@gmail.com
 const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     service: 'gmail',
     auth: {
         user: 'cinenetclub@gmail.com',
-        pass: 'vfyt hooj qegx dgqs' // 16-digit App password ikkada ivvali
+        pass: process.env.EMAIL_PASS// // 16-digit App password ikkada ivvali
     }
 });
 
