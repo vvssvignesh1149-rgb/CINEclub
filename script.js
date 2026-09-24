@@ -984,7 +984,7 @@ async function sendPasswordResetOTP() {
     alert('⏳ Sending 4-digit OTP from CINENET Club mail...');
 
     try {
-        let response = await fetch('http://localhost:3000/api/send-otp', {
+        let response = await fetch('https://cineclub-r8um.onrender.com/api/send-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: emailInput })
@@ -1016,7 +1016,7 @@ async function verifyAndResetPassword() {
 
     try {
         // Verify OTP with backend
-        let response = await fetch('http://localhost:3000/api/verify-otp', {
+        let response = await fetch('https://cineclub-r8um.onrender.com/api/verify-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: targetResetEmail, otp: enteredOtp })
