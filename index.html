@@ -6,28 +6,49 @@
     <title>CINENET - Cinematography Club</title>
     <link rel="stylesheet" href="style.css">
     <!-- Supabase JS Client CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 <body>
     <!-- Navigation Bar -->
     <header>
-        <div style="display:flex; align-items:center; gap:12px;">
+    <div style="display:flex; align-items:center; gap:12px; justify-content:space-width; width:100%;">
+        <div style="display:flex; align-items:center; gap:10px;">
             <div class="logo">CINENET</div>
-
-            <img src="logo.png" alt="Logo" onerror="this.src='https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=100&q=80'" style="height:38px; width:38px; object-fit:contain; border-radius:50%;">
+            <img src="logo.png" alt="Logo" onerror="this.src='https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=100&q=80'" style="height:34px; width:34px; object-fit:contain; border-radius:50%;">
         </div>
 
-        <nav id="globalNavbarLinks">
-            <a href="#" onclick="showSection('home')">Home</a>
-            <a href="#" onclick="showSection('teams-page')">Teams</a>
-            <a href="#" onclick="showSection('edits')">Edits</a>
-            <a href="#" onclick="showSection('portfolio-page');">My Profile</a>
-            <!-- Admin Panel Link (Appears only for Admin) -->
-            <span id="adminNavContainer"></span>
-            <span id="globalAuthNav">
-                <a href="#" onclick="showSection('auth')" style="background:#ffcc00; color:#090a0f; padding:6px 12px; border-radius:4px; font-weight:bold;">Login / Sign Up</a>
-            </span>
-        </nav>
-    </header>
+        <!-- Search Bar Component -->
+       <div id="searchIconContainer" onclick="toggleSearchInput()" style="cursor:pointer; display:flex; align-items:center; padding:6px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+</div>
+<div id="searchInputPopup" style="display:none; position:absolute; right:0; top:0; background:#13151f; border:1px solid rgba(255,204,0,0.4); border-radius:25px; padding:5px 12px; box-shadow:0 5px 20px rgba(0,0,0,0.8); z-index:100; align-items:center; width:220px;">
+    <input type="text" id="globalUserSearchInput" placeholder="Search user..." onkeypress="if(event.key === 'Enter') { handleUserSearch(); }" style="background:transparent !important; border:none !important; color:#b67111; width:100%; outline:none; font-size:13px; padding:4px;">
+    <span onclick="toggleSearchInput()" style="cursor:pointer; color:#b67917; font-size:14px; margin-left:6px;">✕</span>
+</div>
+
+
+
+        
+        <!-- Mobile 3-Lines Hamburger Button -->
+        <div class="mobile-menu-toggle" onclick="toggleMobileMenu()" style="display:none; cursor:pointer; font-size:24px; color:#ffcc00;">
+            ☰
+        </div>
+    </div>
+
+    <nav id="globalNavbarLinks">
+        <a href="#" onclick="showSection('home'); closeMobileMenu();">Home</a>
+        <a href="#" onclick="showSection('teams-page'); closeMobileMenu();">Teams</a>
+        <a href="#" onclick="showSection('portfolio-page'); closeMobileMenu();">My Profile</a>
+        <span id="adminNavContainer"></span>
+        <span id="globalAuthNav">
+            <a href="#" onclick="showSection('auth'); closeMobileMenu();" style="background:#ffcc00; color:#090a0f; padding:6px 12px; border-radius:4px; font-weight:bold;">Login / Sign Up</a>
+        </span>
+    </nav>
+</header>
+
 
     <!-- User Authentication Section -->
     <section id="auth" class="main-section container" style="display:none;">
@@ -61,19 +82,24 @@
 
     <!-- Home Page -->
     <section id="home" class="main-section container">
-        <h2 style="text-align:center; margin-bottom:20px;">🏆 Teams Best of the Month</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
-            <div id="bestCard_filmmaker" class="team-card-img" onclick="openAwardOutput('filmmaker')">
-                <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">🎬 Best Filmmaker</h3>
-                <div id="bestName_filmmaker"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
+        <h2 style="text-align:center; margin-bottom:25px;">🏆 Teams Best of the Month</h2>
+        
+        <!-- 🔥 Updated Best Award Cards Layout (Title & Name Below the Card Image) -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:25px; max-width:900px; margin:0 auto;">
+            <div style="background:#13151f; border:1px solid rgba(255,204,0,0.25); border-radius:14px; overflow:hidden; padding:15px; box-shadow:0 10px 30px rgba(0,0,0,0.6);">
+                <div id="bestCard_filmmaker" class="team-card-img" style="height:200px; border-radius:10px; cursor:pointer;" onclick="openAwardOutput('filmmaker')"></div>
+                <div style="padding-top:15px; text-align:center;">
+                    <h3 style="color:#ffcc00; margin-bottom:4px; font-size:18px; font-family:'Space Grotesk',sans-serif;">🎬 Best Filmmaker</h3>
+                    <div id="bestName_filmmaker"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
+                </div>
             </div>
-            <div id="bestCard_photographer" class="team-card-img" onclick="openAwardOutput('photographer')">
-                <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">📸 Best Photographer</h3>
-                <div id="bestName_photographer"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
-            </div>
-            <div id="bestCard_editor" class="team-card-img" onclick="openAwardOutput('editor')">
-                <h3 style="color:#ffcc00; margin-bottom:4px; text-shadow:2px 2px 4px rgba(0,0,0,0.9);">✂️ Best Editor</h3>
-                <div id="bestName_editor"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
+
+            <div style="background:#13151f; border:1px solid rgba(255,204,0,0.25); border-radius:14px; overflow:hidden; padding:15px; box-shadow:0 10px 30px rgba(0,0,0,0.6);">
+                <div id="bestCard_photographer" class="team-card-img" style="height:200px; border-radius:10px; cursor:pointer;" onclick="openAwardOutput('photographer')"></div>
+                <div style="padding-top:15px; text-align:center;">
+                    <h3 style="color:#ffcc00; margin-bottom:4px; font-size:18px; font-family:'Space Grotesk',sans-serif;">📸 Best Photographer</h3>
+                    <div id="bestName_photographer"><span style="color:#aaa; font-size:13px;">Not Set by Admin Yet</span></div>
+                </div>
             </div>
         </div>
 
@@ -81,7 +107,6 @@
         <div style="display:flex; justify-content:center; gap:10px; margin:35px 0 20px 0; flex-wrap:wrap;">
             <button onclick="filterHomeContent('all')" class="primary-btn" style="width:auto; padding:8px 18px; font-size:13px;">All Works</button>
             <button onclick="filterHomeContent('films')" class="primary-btn" style="width:auto; padding:8px 18px; font-size:13px; background:#1a1d29; color:#ffcc00; border:1px solid #ffcc00;">Short Films</button>
-            <button onclick="filterHomeContent('edits')" class="primary-btn" style="width:auto; padding:8px 18px; font-size:13px; background:#1a1d29; color:#ffcc00; border:1px solid #ffcc00;">Edits</button>
             <button onclick="filterHomeContent('photos')" class="primary-btn" style="width:auto; padding:8px 18px; font-size:13px; background:#1a1d29; color:#ffcc00; border:1px solid #ffcc00;">Photographs</button>
         </div>
 
@@ -90,13 +115,8 @@
             <div class="grid-layout" id="homeShortFilmsGrid"></div>
         </div>
 
-        <div class="content-block" id="filter-block-edits">
-            <h3>✂️ Edits</h3>
-            <div class="grid-layout" id="homeEditsGrid"></div>
-        </div>
-
         <div class="content-block" id="filter-block-photos">
-            <h3>📸 Photographies</h3>
+            <h3>📸 Photographs</h3>
             <div class="grid-layout" id="homePhotosGrid"></div>
         </div>
     </section>
@@ -104,7 +124,7 @@
     <!-- Modal Popup for Awards Output -->
     <div id="awardModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5, 6, 10, 0.95); z-index:9999; justify-content:center; align-items:center; flex-direction:column; padding:20px;">
         <button onclick="closeModal()" style="position:absolute; top:25px; right:35px; background:#ffcc00; color:#090a0f; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:800; font-size:14px; z-index:10000;">✕ CLOSE</button>
-        <h3 id="modalTitle" style="color:#ffcc00; margin-bottom:15px; font-size:20px; text-align:center;">Photograph Masterpiece</h3>
+        <h3 id="modalTitle" style="color:#ffcc00; margin-bottom:15px; font-size:20px; text-align:center;">Masterpiece</h3>
         <div id="modalContentContainer" style="width:100%; height:80vh; display:flex; justify-content:center; align-items:center;"></div>
     </div>
 
@@ -113,30 +133,6 @@
         <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid #e50914; padding: 25px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
             <h2 style="color: #ffcc00; font-family:'Space Grotesk',sans-serif; font-size:26px;">🛡️ CINENET Master Admin Dashboard</h2>
             <p style="color: #ccc; font-size: 14px; margin-top: 5px;">Manage Best of the Month Winners, Teams, & User Submissions.</p>
-        </div>
-
-        <!-- Winners Management Block -->
-        <div style="background: rgba(16, 18, 27, 0.85); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,204,0,0.3); margin-bottom: 40px;">
-            <h3 style="color:#ffcc00; margin-bottom:15px; font-family:'Space Grotesk',sans-serif;">🏆 Set Best of the Month Winners</h3>
-            <p style="color:#aaa; font-size:13px; margin-bottom:15px;">Enter the Media ID from below uploads to set winners for Filmmaker, Photographer, or Editor.</p>
-            
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
-                <div style="background:#0a0c12; padding:15px; border-radius:8px; border:1px solid #333;">
-                    <h4 style="color:#fff; margin-bottom:8px;">Best Filmmaker</h4>
-                    <input type="text" id="adminWinId_filmmaker" placeholder="Enter Media ID" style="width:100%; padding:8px; background:#161924; color:#fff; border:1px solid #444; border-radius:4px; margin-bottom:8px;">
-                    <button onclick="setAdminWinner('filmmaker')" class="primary-btn" style="padding:6px; font-size:12px;">Save Filmmaker Winner</button>
-                </div>
-                <div style="background:#0a0c12; padding:15px; border-radius:8px; border:1px solid #333;">
-                    <h4 style="color:#fff; margin-bottom:8px;">Best Photographer</h4>
-                    <input type="text" id="adminWinId_photographer" placeholder="Enter Media ID" style="width:100%; padding:8px; background:#161924; color:#fff; border:1px solid #444; border-radius:4px; margin-bottom:8px;">
-                    <button onclick="setAdminWinner('photographer')" class="primary-btn" style="padding:6px; font-size:12px;">Save Photographer Winner</button>
-                </div>
-                <div style="background:#0a0c12; padding:15px; border-radius:8px; border:1px solid #333;">
-                    <h4 style="color:#fff; margin-bottom:8px;">Best Editor</h4>
-                    <input type="text" id="adminWinId_editor" placeholder="Enter Media ID" style="width:100%; padding:8px; background:#161924; color:#fff; border:1px solid #444; border-radius:4px; margin-bottom:8px;">
-                    <button onclick="setAdminWinner('editor')" class="primary-btn" style="padding:6px; font-size:12px;">Save Editor Winner</button>
-                </div>
-            </div>
         </div>
 
         <!-- Admin Teams Overview & Management -->
@@ -148,13 +144,6 @@
         <h3 style="color:#fff; font-size:20px; margin-bottom:20px; border-left:4px solid #ffcc00; padding-left:10px;">All User Submissions (Global Control & Media IDs)</h3>
         <div class="grid-layout" id="adminAllWorksGrid"></div>
     </section>
-
-    <!-- Edits Page -->
-    <section id="edits" class="main-section container" style="display:none;">
-        <h2>Edits Showcase</h2>
-        <div class="grid-layout" id="dedicatedEditsGrid"></div>
-    </section>
-
 
     <!-- Teams Page -->
     <section id="teams-page" class="main-section container" style="display:none;">
@@ -216,11 +205,12 @@
 
     <script src="script.js"></script>
 
-<script>
+    <script>
         window.onload = function() {
             showSection('home');
         };
     </script>
+
     <!-- Forgot Password Modal Popup -->
     <div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5,6,10,0.9); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:#13151f; padding:30px; border-radius:12px; border:1px solid rgba(255,204,0,0.3); width:100%; max-width:400px; position:relative;">
