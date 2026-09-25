@@ -744,6 +744,30 @@ async function loadHomeFeed() {
 
     renderPhotographsGrid();
 }
+function switchTab(targetTab) {
+    // Mee website lo unna main content sections ani assume chesukuntunna
+    let homeSection = document.getElementById('homeSection') || document.querySelector('.home-container');
+    let teamsSection = document.getElementById('teamsSection') || document.querySelector('.teams-container');
+    let profileSection = document.getElementById('profileSection') || document.querySelector('.profile-container');
+
+    // Andarini first hide cheyali
+    if(homeSection) homeSection.style.display = 'none';
+    if(teamsSection) teamsSection.style.display = 'none';
+    if(profileSection) profileSection.style.display = 'none';
+
+    // Aah tarvatha user click chesina daanni matrame display cheyali
+    if(targetTab === 'home') {
+        if(homeSection) homeSection.style.display = 'block';
+    } else if(targetTab === 'teams') {
+        if(teamsSection) teamsSection.style.display = 'block';
+    } else if(targetTab === 'profile') {
+        if(profileSection) profileSection.style.display = 'block';
+    }
+
+    // Scroll back to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 
 function switchAuth(tab) {
     let signupForm = document.getElementById('signupForm');
@@ -1318,6 +1342,19 @@ function toggleSearchInput() {
         } else {
             popup.style.display = 'none';
         }
+    }
+}
+function openSection(sectionId) {
+    // Ee class unna anni sections ni hide cheseyi
+    let sections = document.querySelectorAll('.page-section, .content-section');
+    sections.forEach(function(sec) {
+        sec.style.display = 'none';
+    });
+
+    // Kevalam user click chesina section ni matrame chupinchu
+    let targetEl = document.getElementById(sectionId);
+    if(targetEl) {
+        targetEl.style.display = 'block';
     }
 }
 
